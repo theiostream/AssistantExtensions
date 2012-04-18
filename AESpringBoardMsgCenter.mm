@@ -16,7 +16,6 @@
 #include "AESupport.h"
 
 #include "AEExtension.h"
-#include "systemcmds.h"
 
 @interface UIApplication (AESpringBoard)
 - (void)activateAssistantWithOptions:(id)options withCompletion:(id)completion;

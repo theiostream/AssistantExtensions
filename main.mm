@@ -16,7 +16,6 @@
 #import "AESupport.h"
 
 // concrete implementations
-#include "systemcmds.h"
 #include "AEExtension.h"
 
 #import "AESpringBoardMsgCenter.h"

@@ -1,6 +1,6 @@
 [submodule "theos"]
 	path = theos
-	url = git://github.com/DHowett/theos.git
+	url = git://github.com/DHowett/theos
 [submodule "libaiml"]
 	path = libaiml
 	url = git://github.com/theiostream/libaiml.git

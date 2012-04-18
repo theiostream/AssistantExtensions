@@ -7,7 +7,6 @@
 //
 
 #include <notify.h>
-#import <SpringBoard/SpringBoard.h>
 #import "OS5Additions.h"
 #include <substrate.h>
 
@@ -19,195 +18,14 @@
 #include "AEExtension.h"
 #include "systemcmds.h"
 
+@interface UIApplication (AESpringBoard)
+- (void)activateAssistantWithOptions:(id)options withCompletion:(id)completion;
+@end
+
 static BOOL s_firstRequestMade = NO; 
 
-void SBCenterAssistantDismissed()
-{
+void SBCenterAssistantDismissed() {
     s_firstRequestMade = NO; 
-}
-
-HOOK(SBAssistantGuideModel, _loadAllDomains, void)
-{
-    ORIG();
-    NSMutableArray* _domains = nil;
-    object_getInstanceVariable(self, "_domains", (void**)&_domains);
-    if (_domains)
-    {
-        NSLog(@"AE: Populating the assistant guide.");
-        /*SBAssistantGuideDomainModel* fst = [_domains objectAtIndex:0];
-        NSLog(@"sections: %@", [fst sections]);
-        NSLog(@"sectionFilename: %@", [fst sectionFilename]);
-        NSLog(@"requiredCapabilities: %@", [fst requiredCapabilities]);
-        NSLog(@"requiredApps: %@", [fst requiredApps]);
-        NSLog(@"bundleIdentifier: %@", [fst bundleIdentifier]);
-        NSLog(@"displayIdentifier: %@", [fst displayIdentifier]);
-        NSLog(@"tagPhrase: %@", [fst tagPhrase]);
-        NSLog(@"name: %@", [fst name]);
-        NSLog(@"phrases of first section: %@", [[[fst sections] objectAtIndex:0] phrases]);*/
-        
-        static Class _SBAssistantGuideDomainModel = objc_getClass("SBAssistantGuideDomainModel");
-        static Class _SBAssistantGuideSectionModel = objc_getClass("SBAssistantGuideSectionModel");
-        
-        /*// create domain model
-        SBAssistantGuideDomainModel* dm = [[_SBAssistantGuideDomainModel alloc] init];
-        [dm setSectionFilename:@"test"];
-        [dm setBundleIdentifier:@"me.k3a.ace.extension"];
-        //[dm setDisplayIdentifier:@"me.k3a.test"];
-        [dm setName:@"Test"];
-        [dm setTagPhrase:@"Test location"];
-        //[dm setSectionFilename:@"LocationTest/Icon.png"];
-        
-        // add sections to the domain model
-        NSMutableArray* _sections = [NSMutableArray array];
-        SBAssistantGuideSectionModel* sec = [[_SBAssistantGuideSectionModel alloc] init];
-        [sec setTitle:@"Testing location services"];
-        [sec setPhrases:[NSArray arrayWithObjects:@"Test", @"Test location", @"What happened?", nil]];
-        [_sections addObject:sec];
-        object_setInstanceVariable(dm, "_sections", [_sections retain]);
-        
-        // add domain model to the list
-        [_domains addObject:dm];*/
-        
-        for (AEExtension* ex in [AEExtension allExtensions])
-        {
-            NSDictionary* pttrns = [ex patternsPlist];
-            if (pttrns)
-            {
-                // create domain model
-                SBAssistantGuideDomainModel* dm = [[_SBAssistantGuideDomainModel alloc] init];
-                if (!dm) { NSLog(@"AE: Unexpected error %s %d!!", __FILE__, __LINE__); continue; };
-                [dm setBundleIdentifier:@"me.k3a.ace.extension"];
-                [dm setName:[ex displayName]];
-                
-                NSString* example = [pttrns objectForKey:@"example"];
-                if (example) 
-                    [dm setTagPhrase:example];
-                else
-                    [dm setTagPhrase:[ex displayName]];
-                    
-                NSString* iconName = [pttrns objectForKey:@"icon"];
-                if (iconName) [dm setSectionFilename:[NSString stringWithFormat:@"%@/%@",[ex name], iconName]];
-                
-                // create sections
-                NSMutableArray* _sections = [[NSMutableArray alloc] init];
-                
-                NSDictionary* patternsFromPlist = [pttrns objectForKey:@"patterns"];
-                for (NSString* patternKey in patternsFromPlist)
-                {
-                    NSDictionary* pat = [patternsFromPlist objectForKey:patternKey];
-                    NSString* cat = [pat objectForKey:@"category"];
-                    if (!cat) cat = @"Uncategorized";
-                    NSArray* examples = [pat objectForKey:@"examples"];
-                    if (!examples) continue;
-                    
-                    // try to find existing section by category
-                    BOOL found = NO;
-                    for (SBAssistantGuideSectionModel* s in _sections)
-                    {
-                        if ([cat caseInsensitiveCompare:[s title]] == NSOrderedSame)
-                        {
-                            [[s phrases] addObjectsFromArray:examples];
-                            found = YES;
-                            break;
-                        }
-                    }
-                    
-                    // not found, add
-                    if (!found)
-                    {
-                        SBAssistantGuideSectionModel* sec = [[_SBAssistantGuideSectionModel alloc] init];
-                        if (!sec) { NSLog(@"AE: Unexpected error %s %d!!", __FILE__, __LINE__); continue; };
-                        [sec setTitle:cat];
-                        [sec setPhrases:[NSMutableArray arrayWithArray:examples]];
-                        [_sections addObject:sec];
-                    }
-                }
-                
-                if ([_sections count] > 0)
-                {
-                    // add sections to the domain model
-                    object_setInstanceVariable(dm, "_sections", _sections);
-                    
-                    // add domain model to the list
-                    [_domains addObject:dm];
-                }
-                else
-                {
-                    // just release
-                    [dm release];
-                }
-            }
-        }
-    }
-}
-END
-
-HOOK(SBAssistantGuideDomainListController, tableView$cellForRowAtIndexPath$, SBAssistantGuideDomainListCell*, UITableView* tableView, NSIndexPath* indexPath)
-{
-    SBAssistantGuideDomainListCell* cell = ORIG(tableView,indexPath);
-    
-    SBAssistantGuideModel* _model = nil;
-    object_getInstanceVariable(self, "_model", (void**)&_model);
-    SBAssistantGuideDomainModel* dm = [[_model allDomains] objectAtIndex:indexPath.row];
-    
-    if (_model && dm)
-    {
-        if ([[dm bundleIdentifier] isEqualToString:@"me.k3a.ace.extension"])
-        {
-            BOOL loadDefaultIcon = NO;
-            
-            NSArray* iconPathComponents = [[dm sectionFilename] componentsSeparatedByString:@"/"];
-            if ([iconPathComponents count]<2)
-            {
-                loadDefaultIcon = YES;
-                if ([[dm sectionFilename] length]>0)
-                    NSLog(@"AE: Wrong icon path. Must be in format ExtensionNameWithoutPathEx/path/inside/bundle.png");
-            }
-            else
-            {
-                NSMutableString* iconPath = [NSMutableString stringWithString:@EXTENSIONS_PATH];
-                for (NSString* comp in iconPathComponents)
-                    [iconPath appendFormat:@"/%@", comp];
-                
-                //NSLog(@"AE: Setting the icon for the guide: %@", iconPath);
-                if (iconPath && [iconPath length]>0)
-                {
-                    if (![iconPath hasSuffix:@".png"] && ![iconPath hasSuffix:@".jpg"])
-                        [iconPath appendString:@".png"];
-                    
-                    UIImage* icon = [UIImage imageWithContentsOfFile:iconPath];
-                    if (!icon) 
-                    {
-                        NSLog(@"AE: Error loading icon for the guide from '%@'!", iconPath);
-                        loadDefaultIcon = YES;
-                    }
-                    else
-                        [cell setIconImage:icon];
-                }
-            }
-            
-            // should load default icon?
-            if (loadDefaultIcon)
-            {
-                UIImage* defImg = [UIImage imageWithContentsOfFile:@"/Library/PreferenceBundles/AEPrefs.bundle/AEPrefs@2x.png"];
-                if (defImg)
-                    [cell setIconImage:defImg];
-                else
-                    NSLog(@"AE: Failed to load default icon image!");
-            }
-        }
-    }
-    
-    return cell;
-}
-END
-
-static void InitSBHooks()
-{
-    GET_CLASS(SBAssistantGuideModel)
-    LOAD_HOOK(SBAssistantGuideModel, _loadAllDomains, _loadAllDomains)
-    GET_CLASS(SBAssistantGuideDomainListController)
-    LOAD_HOOK(SBAssistantGuideDomainListController, tableView:cellForRowAtIndexPath:, tableView$cellForRowAtIndexPath$)
 }
 
 @implementation AESpringBoardMsgCenter
@@ -506,7 +324,7 @@ static bool HandleSpeech(NSString* refId, NSString* text, NSArray* tokens, NSSet
     static Class _SBAssistantController = objc_getClass("SBAssistantController");
     if ([_SBAssistantController preferenceEnabled] && [_SBAssistantController shouldEnterAssistant])
     {
-        [(SpringBoard*)UIApp activateAssistantWithOptions:nil withCompletion:nil];
+        [[UIApplication sharedApplication] activateAssistantWithOptions:nil withCompletion:nil];
     }
     
 	return nil;
@@ -669,8 +487,8 @@ static void ReloadPrefs(CFNotificationCenterRef center, void *observer, CFString
         locationData.valid = false;
         
         // init commands
-        InitSystemCmds();
-        InitSBHooks();
+        //InitSystemCmds();
+        //InitSBHooks();
         [AEExtension initExtensions];
         
         

@@ -1,6 +1,6 @@
 GO_EASY_ON_ME=1
 
-include theos/makefiles/common.mk
+include ../../theos/makefiles/common.mk
 
 BUNDLE_NAME = AECustomizerPreferences
 AECustomizerPreferences_FILES = AECustomizerPreferences.mm

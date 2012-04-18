@@ -4,9 +4,6 @@
 #import <objc/runtime.h>
 #import <libdisplaystack/DSDisplayController.h>
 #import <Twitter/Twitter.h>
-#import <SpringBoard/SBIcon.h>
-#import <SpringBoard/SBUIController.h>
-#import <SpringBoard/SBAwayController.h>
 #import <Accounts/Accounts.h>
 
 static id AEApplicationForDisplayName(NSString *displayName) {
@@ -15,8 +12,7 @@ static id AEApplicationForDisplayName(NSString *displayName) {
 	float bestScore = 0;
     id bestApp = nil;
 
-	for (id app in apps) 
-	{
+	for (SBApplication *app in apps) {
 		float score = [displayName similarityWithString:[app displayName]];
         if (score > bestScore)
         {
@@ -128,17 +124,15 @@ static BOOL AEPreviewTweet(NSString* tweetText)
 }
 
 - (BOOL)handleLaunchMatch:(id<AEPatternMatch>)match context:(id<SEContext>)ctx {
-    
     // check if this is allowed
-    static SBAwayController* awayController = [objc_getClass("SBAwayController") sharedAwayController];
-    if ((bool)[awayController isDeviceLocked] && (bool)[awayController isPasswordProtected])
-    {
+    static id awayController = [objc_getClass("SBAwayController") sharedAwayController];
+    if ([awayController isDeviceLocked] && [awayController isPasswordProtected]) {
         [ctx sendAddViewsUtteranceView:[_system localizedString:@"Sorry, I don't know your lockscreen password."]];
         [ctx sendRequestCompleted];
         return YES;
     }
         
-	NSString *appname = [[[match namedElement:@"app"] mutableCopy] autorelease];
+	NSMutableString *appname = [[[match namedElement:@"app"] mutableCopy] autorelease];
 
     if ([appname isEqualToString:@"nava gone"] || [appname isEqualToString:@"navvy gone"])
 		[appname setString:@"Navigon"];
@@ -275,7 +269,7 @@ static BOOL AEPreviewTweet(NSString* tweetText)
     static Class _SBUIController = objc_getClass("SBUIController");
     if (!_SBUIController) return NO;
     
-    int perc = (int)[(SBUIController*)[_SBUIController sharedInstance] curvedBatteryCapacityAsPercentage];
+    int perc = (int)[(SBUIController*)[_SBUIController sharedInstance] curvedBatteryCapacityAsPercentage];//
     
     [ctx sendAddViewsUtteranceView:[NSString stringWithFormat:[_system localizedString:@"Battery at %d %%."], perc]];
 	[ctx sendRequestCompleted];

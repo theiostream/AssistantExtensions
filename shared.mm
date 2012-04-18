@@ -8,15 +8,10 @@
  */
 
 #include "shared.h"
-#include <AppSupport/CPDistributedMessagingCenter.h>
+#include <time.h>
+#import <AppSupport/CPDistributedMessagingCenter.h>
 
 #pragma mark - LOGGING -----------------------------------------------------------
-
-#include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
-#include <unistd.h>
-#include <time.h>
 
 void LogInfo(const char* function, const char* desc, ...)
 {
@@ -42,13 +37,6 @@ void LogInfo(const char* function, const char* desc, ...)
 	//print
 	//printf("%s", buffer2);
     NSLog(@"%s", buffer2);
-}
-
-void FlushLog()
-{
-    static volatile int i=0;
-    i++;
-    //fflush(fp);
 }
 
 #pragma mark - APP IDENTIFIER -----------------------------------------------------------
@@ -106,82 +94,6 @@ NSString* getAppIdentifier()
     return appIdent;
 }
 
-
-#pragma mark - IS VALID POINTER? -----------------------------------------------------------
-
-#import <malloc/malloc.h>
-#import <objc/runtime.h>
-
-static sigjmp_buf sigjmp_env;
-
-inline void PointerReadFailedHandler(int signum)
-{
-    siglongjmp (sigjmp_env, 1);
-}
-
-BOOL IsPointerAnObject(const void *testPointer)
-{
-    BOOL allocatedLargeEnough = NO;
-    if (!testPointer) return NO;
-    
-    // Set up SIGSEGV and SIGBUS handlers
-    struct sigaction new_segv_action, old_segv_action;
-    struct sigaction new_bus_action, old_bus_action;
-    new_segv_action.sa_handler = PointerReadFailedHandler;
-    new_bus_action.sa_handler = PointerReadFailedHandler;
-    sigemptyset(&new_segv_action.sa_mask);
-    sigemptyset(&new_bus_action.sa_mask);
-    new_segv_action.sa_flags = 0;
-    new_bus_action.sa_flags = 0;
-    sigaction (SIGSEGV, &new_segv_action, &old_segv_action);
-    sigaction (SIGBUS, &new_bus_action, &old_bus_action);
-    
-    // The signal handler will return us to here if a signal is raised
-    if (sigsetjmp(sigjmp_env, 1))
-    {
-        sigaction (SIGSEGV, &old_segv_action, NULL);
-        sigaction (SIGBUS, &old_bus_action, NULL);
-        return NO;
-    }
-    
-    Class testPointerClass = *((Class *)testPointer);
-    
-    // Get the list of classes and look for testPointerClass
-    BOOL isClass = NO;
-    NSInteger numClasses = objc_getClassList(NULL, 0);
-    Class *classesList = (Class *)malloc(sizeof(Class) * numClasses);
-    numClasses = objc_getClassList(classesList, numClasses);
-    for (int i = 0; i < numClasses; i++)
-    {
-        if (classesList[i] == testPointerClass)
-        {
-            isClass = YES;
-            break;
-        }
-    }
-    free(classesList);
-    
-    // We're done with the signal handlers (install the previous ones)
-    sigaction (SIGSEGV, &old_segv_action, NULL);
-    sigaction (SIGBUS, &old_bus_action, NULL);
-    
-    // Pointer does not point to a valid isa pointer
-    if (!isClass)
-    {
-        return NO;
-    }
-    
-    // Check the allocation size
-    size_t allocated_size = malloc_size(testPointer);
-    size_t instance_size = class_getInstanceSize(testPointerClass);
-    if (allocated_size > instance_size)
-    {
-        allocatedLargeEnough = YES;
-    }
-    
-    return allocatedLargeEnough;
-}
-
 #pragma mark - OTHER HELPERS -----------------------------------------------------------
 
 NSString* RandomUUID()
@@ -209,14 +121,3 @@ NSDictionary* IPCCallResponse(NSString* center, NSString* message, NSDictionary*
 {
     return [[CPDistributedMessagingCenter centerNamed:center] sendMessageAndReceiveReplyName:message userInfo:object];
 }
-
-
-
-
-
-
-
-
-
-
-

@@ -1,4 +1,5 @@
 // iLockMyKids Source Code
+// XXX: wtf is iLockMyKids?
 
 #import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>

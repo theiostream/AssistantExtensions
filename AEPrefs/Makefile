@@ -1,4 +1,9 @@
-include theos/makefiles/common.mk
+include ../theos/makefiles/common.mk
+
+####
+# TODO:
+# Stop using XIBs
+####
 
 BUNDLE_NAME = AEPrefs
 AEPrefs_FILES = AEPrefs.mm AEDonate.mm AEExtensionCell.mm

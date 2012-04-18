@@ -7,19 +7,17 @@
 //
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
-#import <Preferences/Preferences.h>
+#import <Preferences/PSListController.h>
 #import <Accounts/Accounts.h>
 
 #define PREF_FILE "/var/mobile/Library/Preferences/me.k3a.AssistantExtensions.plist"
 
-@interface AELegalController: PSViewController {
-    UITextView* _view;
+@interface AELegalController : PSListController {
+	UITextView *_xview;
 }
-- (id) view;
 @end
 
-
-@interface CustomAEController: PSViewController <UITextFieldDelegate,UITableViewDataSource,UITableViewDelegate> {
+@interface CustomAEController : PSListController <UITextFieldDelegate,UITableViewDataSource,UITableViewDelegate> {
     
     IBOutlet UITableViewCell* _exCell;
     

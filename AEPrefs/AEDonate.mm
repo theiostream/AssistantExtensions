@@ -8,7 +8,6 @@
 
 #import "AEDonate.h"
 #import "AEPrefs.h"
-#import <Preferences/Preferences.h>
 
 @implementation AEDonate
 

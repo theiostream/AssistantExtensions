@@ -11,26 +11,28 @@
 @implementation AELegalController
 - (id)init
 {
-    if ( (self = [super init]) )
+    if ((self = [super init]))
     {
-        _view = [[UITextView alloc] initWithFrame:CGRectMake(0,0,320,400)];
+        _xview = [[UITextView alloc] initWithFrame:CGRectMake(0,0,320,400)];
         NSString* path = [[NSBundle bundleForClass:[self class]] pathForResource:@"about" ofType:@"txt"];
-        _view.text = [NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil];
-        _view.editable = NO;
+        [_xview setText:[NSString stringWithContentsOfFile:path encoding:NSUTF8StringEncoding error:nil]];
+        [_xview setEditable:NO];
         
         [[self navigationItem] setTitle:@"About"];
     }
     
     return self;
 }
+
 -(void)dealloc
 {
-    [_view release];
+    [_xview release];
 	[super dealloc];
 }
+
 - (id) view
 {
-    return _view;
+    return _xview;
 }
 @end
 

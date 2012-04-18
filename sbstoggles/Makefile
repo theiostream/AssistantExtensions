@@ -1,4 +1,4 @@
-include theos/makefiles/common.mk
+include ../theos/makefiles/common.mk
 
 BUNDLE_NAME = SBSToggles
 SBSToggles_BUNDLE_EXTENSION = assistantExtension

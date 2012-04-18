@@ -1,4 +1,4 @@
-#import <SpringBoard/SpringBoard.h>
+#import <CoreLocation/CoreLocation.h>
 
 @interface AFConnection : NSObject
 - (void)clearContext;
@@ -7,23 +7,21 @@
 - (void)startRequestWithCorrectedText:(id)arg1 forSpeechIdentifier:(id)arg2;
 @end
 
-
-
-@interface SBUIController (AEIOS5)
+@interface SBUIController : NSObject
 - (void)lockFromSource:(int)fp8;
 - (void)_hideKeyboard;
 @end
 
-@interface SBAwayController (AEIOS5)
+@interface SBAwayController : NSObject
 - (BOOL)isDeviceLocked;
 @end
 
-@interface SpringBoard (AEIOS5)
+@interface SpringBoard : NSObject
 - (void)activateAssistantWithOptions:(id)fp8 withCompletion:(id)fp;
 @end
 
 
-@interface SBAwayView (AEIOS5)
+@interface SBAwayView : NSObject
 - (void)hideBulletinView;
 - (void)showBulletinView;
 @end
@@ -42,7 +40,7 @@
 -(void)_say:(NSString*)what forced:(BOOL)forced;
 @end
 
-@interface SBBrightnessController (AEIOS5)
+@interface SBBrightnessController : NSObject
 + (id)sharedBrightnessController;
 - (void)setBrightnessLevel:(float)fp8;
 @end

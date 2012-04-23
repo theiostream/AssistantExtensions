@@ -9,7 +9,6 @@
 #pragma once
 #import <Foundation/Foundation.h>
 
-NSString* getAppIdentifier();
 NSString* RandomUUID();
 
 void IPCCall(NSString* center, NSString* message, NSDictionary* object);

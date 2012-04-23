@@ -30,13 +30,11 @@ __orig_fn(self, sel, ## args)
 
 
 #define GET_CLASS(class) \
-Class $ ## class = objc_getClass(#class); \
-if (! $ ## class ) Info("WARN: Failed to get class %s!", #class);
+Class $ ## class = objc_getClass(#class);
 
 
 #define GET_METACLASS(class) \
-Class $ ## class = objc_getMetaClass(#class); \
-if (! $ ## class ) Info("WARN: Failed to get metaclass %s!", #class);
+Class $ ## class = objc_getMetaClass(#class);
 
 
 #define HOOK(className, name, type, args...) \
@@ -48,15 +46,4 @@ type (*__orig_fn)(className *self, SEL sel, ## args) = _ ## className ## $ ## na
 #define END }
 
 #define LOAD_HOOK(class, sel, imp) \
-if ($ ## class) { MSHookMessage($ ## class, @selector(sel), MSHake(class ## $ ## imp)); \
-if (! _ ## class ## $ ## imp ) Info("WARN: " #class "-" #sel " not found!" ); }
-
-
-
-
-
-
-
-
-
-
+if ($ ## class) { MSHookMessage($ ## class, @selector(sel), MSHake(class ## $ ## imp)); }

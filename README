@@ -10,8 +10,9 @@ TODO soon to be released.
 
 COMPILING
 -------------------------------
-1. Get and place AssistantServices.framework, AssistantUI.framework and SAObjects.framework inside frameworks/ directory
-2. make
+1. Get and place AssistantUI.framework and SAObjects.framework inside frameworks/ directory
+2. Place libaiml.dylib, libdisplaystack.dylib and libpcre.dylib on lib/ directory or at LIBPATH (/usr/lib, $THEOS/lib, et al.)
+3. make
 
 MORE
 -------------------------------

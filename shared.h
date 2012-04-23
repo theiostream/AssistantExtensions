@@ -9,20 +9,11 @@
 #pragma once
 #import <Foundation/Foundation.h>
 
-
-
-void LogInfo(const char* function, const char* desc, ...);
-void FlushLog();
-#define Info(desc, ...) LogInfo("", desc, ##__VA_ARGS__)
-
 NSString* getAppIdentifier();
-BOOL IsPointerAnObject(const void *testPointer);
 NSString* RandomUUID();
-unsigned GetTimestampMsec();
 
 void IPCCall(NSString* center, NSString* message, NSDictionary* object);
 NSDictionary* IPCCallResponse(NSString* center, NSString* message, NSDictionary* object);
-
 
 //#warning TODO: PT DENY ATTACH!!!
 // Apple PT_DENY_ATTACH addition to disallow gdb attachment

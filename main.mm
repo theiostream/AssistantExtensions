@@ -195,38 +195,23 @@ static void Shutdown()
     //[[AEAssistantdMsgCenter sharedInstance] release];
 }
 
-static void uncaughtExceptionHandler(NSException *exception) {
+/*static void uncaughtExceptionHandler(NSException *exception) {
     NSLog(@"AE: CRASH DETECTED: %@", exception);
     NSLog(@"AE: Stack Trace: %@", [exception callStackSymbols]);
     // Internal error reporting
-}
-
-/*extern "C" NSArray* AFPreferencesSupportedLanguages();
-static NSArray* (*original_AFPreferencesSupportedLanguages)();
-static NSArray* replaced_AFPreferencesSupportedLanguages()
-{
-    NSArray* orig = original_AFPreferencesSupportedLanguages();
-    NSMutableArray* repl = [NSMutableArray arrayWithArray:orig];
-    [repl addObject:@"ja-JP"];
-    
-    return repl;
 }*/
 
 bool s_inSB = false;
-extern "C" void Initialize();
-extern "C" void Initialize() 
-{
-    unsigned startStamp = GetTimestampMsec();
-    
-	// Init
+__attribute__((constructor))
+static void AEInit() {
+    // Init
     NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-	
-    NSSetUncaughtExceptionHandler(&uncaughtExceptionHandler);
+	//NSSetUncaughtExceptionHandler(&uncaughtExceptionHandler);
     
 	// bundle identifier
 	NSString* bundleIdent = getAppIdentifier();
     
-    NSLog(@"( AssistantExtensions init for %s )", [bundleIdent UTF8String]);
+    NSLog(@"[AssistantExtensions] Initializing on %@", bundleIdent);
     
 
     if ( !bundleIdent || 
@@ -236,8 +221,6 @@ extern "C" void Initialize()
 		[pool release];
 		return;
 	}
-    
-    NSLog(@"************* AssistantExtensions %s init for %s ************* ", AE_VERSION, [bundleIdent UTF8String]);
     
     s_regCls = [[NSMutableArray alloc] init];
     
@@ -274,15 +257,9 @@ extern "C" void Initialize()
     }
     
     [pool release];
-    
-    NSLog(@"AE: Init took %u ms", GetTimestampMsec() - startStamp);
-    
-    //MSHookFunction(AFPreferencesSupportedLanguages, replaced_AFPreferencesSupportedLanguages, &original_AFPreferencesSupportedLanguages);
 }
 
 bool InSpringBoard()
 {
     return s_inSB;
 }
-
-

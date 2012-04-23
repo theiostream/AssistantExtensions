@@ -11,34 +11,6 @@
 #include <time.h>
 #import <AppSupport/CPDistributedMessagingCenter.h>
 
-#pragma mark - LOGGING -----------------------------------------------------------
-
-void LogInfo(const char* function, const char* desc, ...)
-{
-	static char buffer[1024];
-	
-	va_list argList;
-	va_start(argList, desc);
-	vsprintf(buffer, desc, argList);
-	va_end(argList);
-	
-	// get time
-	time_t tim;
-	time(&tim);
-	tm *timm = localtime(&tim);
-	int tda = timm->tm_mday;
-	int tmo = timm->tm_mon+1;
-	int tho = timm->tm_hour;
-	int tmi = timm->tm_min;
-	
-	char buffer2[2048];
-	sprintf(buffer2, "ObjcDump[%d.%d@%d:%d]: %d: %s\r\n", tda, tmo, tho, tmi, getpid(), buffer);
-	
-	//print
-	//printf("%s", buffer2);
-    NSLog(@"%s", buffer2);
-}
-
 #pragma mark - APP IDENTIFIER -----------------------------------------------------------
 
 #include <sys/sysctl.h>
@@ -96,20 +68,9 @@ NSString* getAppIdentifier()
 
 #pragma mark - OTHER HELPERS -----------------------------------------------------------
 
-NSString* RandomUUID()
-{
-    return [NSString stringWithFormat:@"1%07x-%04x-%04x-%04x-%06x%06x", rand()%0xFFFFFFF, rand()%0xFFFF, rand()%0xFFFF, rand()%0xFFFF, rand()%0xFFFFFF, rand()%0xFFFFFF];
-}
-
-unsigned GetTimestampMsec()
-{
-    timeval time;
-    gettimeofday(&time, NULL);
-    
-    unsigned elapsed_seconds  = time.tv_sec;
-    unsigned elapsed_useconds = time.tv_usec;
-    
-    return elapsed_seconds * 1000 + elapsed_useconds/1000;
+NSString* RandomUUID() {
+    CFUUIDRef u = CFUUIDCreate(NULL);
+    return (NSString *)CFUUIDCreateString(NULL, u);
 }
 
 void IPCCall(NSString* center, NSString* message, NSDictionary* object)

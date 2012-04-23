@@ -6,8 +6,8 @@ TWEAK_NAME = AssistantExtensions
 AssistantExtensions_FILES = AEAssistantdMsgCenter.mm AEContext.mm AEExtension.mm AESpringBoardMsgCenter.mm AEStringAdditions.mm AESupport.mm SiriObjects.mm AEX.mm
 AssistantExtensions_FILES += main.mm shared.mm AEHooks.xm AEDevHelper.xm
 AssistantExtensions_FRAMEWORKS = Foundation UIKit CoreFoundation Accounts Twitter CoreLocation
-AssistantExtensions_PRIVATE_FRAMEWORKS = AppSupport GraphicsServices AssistantUI SAObjects VoiceServices BulletinBoard AssistantServices
-AssistantExtensions_LDFLAGS  = -multiply_defined suppress -Llib -Fframeworks -dynamiclib -init _Initialize
+AssistantExtensions_PRIVATE_FRAMEWORKS = AppSupport GraphicsServices AssistantUI SAObjects VoiceServices BulletinBoard
+AssistantExtensions_LDFLAGS  = -multiply_defined suppress -Llib -Fframeworks -dynamiclib
 AssistantExtensions_LDFLAGS += -ObjC++ -fobjc-exceptions -fobjc-call-cxx-cdtors
 AssistantExtensions_LDFLAGS += -lobjc -lsubstrate -lpthread -lpcre
 AssistantExtensions_CFLAGS = -Os -funroll-loops -g -DSC_PRIVATE -fobjc-abi-version=2 -fno-exceptions -fobjc-exceptions -fobjc-call-cxx-cdtors -Iinclude

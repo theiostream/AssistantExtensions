@@ -24,6 +24,12 @@
 static NSMutableArray* s_regCls = nil; // class acronyms
 static bool s_regDone = false; // whether acronyms are registered
 
+bool s_inSB = false;
+bool InSpringBoard()
+{
+    return s_inSB;
+}
+
 
 static ADSession* s_lastSession = nil;
 // assistantd - server2client
@@ -184,9 +190,8 @@ NSArray* GetAcronyms(){ s_regDone=true; NSLog(@"++++++++++ SENDING %u acronyms!"
 
 #pragma mark - INITIALIZATION CODE ---------------------------------------------------------------
 
-static void Shutdown()
-{
-    NSLog(@"************* AssistantExtensions ShutDown *************");
+static void Shutdown() {
+    NSLog(@"[AssistantExtensions] assistantd exited. Shutting down.");
 
     [s_regCls release];
     AESupportShutdown();
@@ -200,8 +205,6 @@ static void Shutdown()
     NSLog(@"AE: Stack Trace: %@", [exception callStackSymbols]);
     // Internal error reporting
 }*/
-
-bool s_inSB = false;
 __attribute__((constructor))
 static void AEInit() {
     // Init
@@ -209,27 +212,16 @@ static void AEInit() {
 	//NSSetUncaughtExceptionHandler(&uncaughtExceptionHandler);
     
 	// bundle identifier
-	NSString* bundleIdent = getAppIdentifier();
-    
-    NSLog(@"[AssistantExtensions] Initializing on %@", bundleIdent);
-    
-
-    if ( !bundleIdent || 
-        (![bundleIdent isEqualToString:@"assistantd"] && ![bundleIdent isEqualToString:@"SpringBoard"])
-       )
-	{
-		[pool release];
-		return;
-	}
+	NSString* bundleIdent = [[NSBundle mainBundle] bundleIdentifier];
+    NSLog(@"[AssistantExtensions] Loading into %@", bundleIdent);
     
     s_regCls = [[NSMutableArray alloc] init];
     
     // for custom acronyms
-    GET_CLASS(BasicAceContext)
-    LOAD_HOOK(BasicAceContext, init, init)
+    GET_CLASS(BasicAceContext);
+    LOAD_HOOK(BasicAceContext, init, init);
     
-    if ([bundleIdent isEqualToString:@"SpringBoard"])
-    {
+    if ([bundleIdent isEqualToString:@"com.apple.springboard"]) {
         s_inSB = true;
         //sleep(2); // just in case (to avoid reboot crashes), probably can be removed later TODO
 
@@ -239,13 +231,12 @@ static void AEInit() {
         
         //GET_CLASS(SBAssistantUIPluginManager)
         //LOAD_HOOK(SBAssistantUIPluginManager, _bundleSearchPaths, _bundleSearchPaths)
-
     }
-    else if ([bundleIdent isEqualToString:@"assistantd"])
-    {
-        GET_CLASS(ADSession)
-        LOAD_HOOK(ADSession, _handleAceObject:, _handleAceObject$)
-        LOAD_HOOK(ADSession, sendCommand:, sendCommand$)
+    
+    else if ([bundleIdent isEqualToString:@"com.apple.AssistantServices"]) {   
+        GET_CLASS(ADSession);
+        LOAD_HOOK(ADSession, _handleAceObject:, _handleAceObject$);
+        LOAD_HOOK(ADSession, sendCommand:, sendCommand$);
         
         //CopyAcronymsFromSpringboardToAssistantd(); // only needed for custom AceObjects
         
@@ -256,10 +247,5 @@ static void AEInit() {
         atexit(&Shutdown);
     }
     
-    [pool release];
-}
-
-bool InSpringBoard()
-{
-    return s_inSB;
+    [pool drain];
 }

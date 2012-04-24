@@ -39,7 +39,7 @@ bool AESendToClient(NSDictionary* aceObject)
     }
     else
     {
-        return SessionSendToClient(aceObject);
+        return SessionSend(kSendToClient, aceObject);
     }
 }
 bool AESendToServer(NSDictionary* aceObject)
@@ -52,7 +52,7 @@ bool AESendToServer(NSDictionary* aceObject)
     }
     else
     {
-        return SessionSendToServer(aceObject);
+        return SessionSend(kSendToServer, aceObject);
     }
 }
 

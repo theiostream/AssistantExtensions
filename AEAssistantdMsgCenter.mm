@@ -56,7 +56,7 @@ static NSDictionary* LocationDict(CLLocation* loc)
 - (NSDictionary*)handleSend2Client:(NSString *)name userInfo:(NSDictionary *)userInfo 
 {
     BOOL success = NO;
-    if (SessionSendToClient([userInfo objectForKey:@"object"], nil)) success = YES;
+    if (SessionSend(kSendToClient, [userInfo objectForKey:@"object"])) success = YES;
     
     return [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:success],@"reply", nil];
 }
@@ -64,7 +64,7 @@ static NSDictionary* LocationDict(CLLocation* loc)
 - (NSDictionary*)handleSend2Server:(NSString *)name userInfo:(NSDictionary *)userInfo 
 {
     BOOL success = NO;
-    if (SessionSendToServer([userInfo objectForKey:@"object"], nil)) success = YES;
+    if (SessionSend(kSendToServer, [userInfo objectForKey:@"object"])) success = YES;
     
     return [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:success],@"reply", nil];
 }

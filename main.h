@@ -8,10 +8,14 @@
 
 #include "SiriObjects.h"
 
+/*// sends immediately without additional processing
+BOOL SessionSendToClient(NSDictionary* dict, id ctx=nil);
 // sends immediately without additional processing
-id SessionSendToClient(NSDictionary* dict, id ctx=nil);
-// sends immediately without additional processing
-id SessionSendToServer(NSDictionary* dict, id ctx=nil);
+BOOL SessionSendToServer(NSDictionary* dict, id ctx=nil);*/
+
+#define kSendToClient 0
+#define kSendToServer 1
+BOOL SessionSend(int type, NSDictionary *dict);
 
 bool RegisterAcronymImpl(NSString* acronym, NSString* group);
 NSArray* GetAcronyms();

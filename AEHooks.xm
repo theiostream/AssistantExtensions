@@ -9,14 +9,24 @@
 /*%
 % TODO:
 % - Hook SBAssistantUIPluginManager instead of creating .assistntUIBundle
+% - UI improvements for AssistantGuide
 %*/
 
+//############### Declarations
+
 #import "AESpringBoardMsgCenter.h"
+#import "AEAssistantdMsgCenter.h"
 #import "AEExtension.h"
+#import "AESupport.h"
 #import "main.h"
+
+static ADSession *s_lastSession = nil;
+
+id AECreateAceObjectFromDictionary(NSDictionary *dict);
 
 //############### SpringBoard Hooks
 
+%group SBHooks
 %hook SBAssistantController
 - (void)viewWillDisappear {
     //theiostream, please, remove logs like this after you are done :P
@@ -49,7 +59,7 @@
                 // create domain model
                 SBAssistantGuideDomainModel* dm = [[%c(SBAssistantGuideDomainModel) alloc] init];
                 if (!dm) { NSLog(@"AE: Unexpected error %s %d!!", __FILE__, __LINE__); continue; };
-                [dm setBundleIdentifier:@"me.k3a.ace.extension"];
+                [dm setBundleIdentifier:@"am.theiostre.someid"];
                 [dm setName:[ex displayName]];
                 
                 NSString* example = [pttrns objectForKey:@"example"];
@@ -121,7 +131,7 @@
     SBAssistantGuideDomainModel* dm = [[_model allDomains] objectAtIndex:indexPath.row];
     
     if (_model && dm) {
-        if ([[dm bundleIdentifier] isEqualToString:@"me.k3a.ace.extension"]) {
+        if ([[dm bundleIdentifier] isEqualToString:@"am.theiostre.someid"]) {
             BOOL loadDefaultIcon = NO;
             
             NSArray* iconPathComponents = [[dm sectionFilename] componentsSeparatedByString:@"/"];
@@ -167,19 +177,89 @@
     return cell;
 }
 %end
+%end
 
 //############### assistantd Hooks
 
-/*%hook BasicAceContext
+%group ADHooks
+%hook ADSession
+- (void)_handleAceObject:(id)aceObj {
+    s_lastSession = self;
+    
+    NSDictionary* dict = [aceObj dictionary];
+    NSDictionary* resp = IPCCallResponse(@"me.k3a.AssistantExtensions", @"Server2Client", [NSDictionary dictionaryWithObject:dict forKey:@"object"]);
+    NSDictionary* respObj = [resp objectForKey:@"object"];
+    
+    if (respObj) %orig(AECreateAceObjectFromDictionary(respObj));
+    else		 %orig;
+}
+
+- (void)sendCommand:(id)cmd {
+    s_lastSession = self;
+    
+    NSDictionary* dict = [cmd dictionary];
+    NSDictionary* resp = IPCCallResponse(@"me.k3a.AssistantExtensions", @"Client2Server", [NSDictionary dictionaryWithObject:dict forKey:@"object"]);
+    NSDictionary* respObj = [resp objectForKey:@"object"];
+    
+    if (respObj) %orig(AECreateAceObjectFromDictionary(respObj));
+    else		 %orig;
+}
+%end
+%end
+
+%hook BasicAceContext
 - (id)init {
-	s_regDone = YES;
-	
-	id orig = %orig;
-	[self addAcronym:@"SAK3AExtension" forGroup:@"me.k3a.ace.extension"];
-	return orig;
+    // TODO: maybe cache and use only one context?
+    if ((self = %orig))
+    	[self addAcronym:@"SAK3AExtension" forGroup:@"me.k3a.ace.extension"];
+        
+    return self;
 }
 %end
 
-%hook ADSession
-- (void)_handleAceObject:(id)aceObj {
-	*/
+//############### Definitions
+id AECreateAceObjectFromDictionary(NSDictionary *dict) {
+	id ctx = [[[objc_getClass("BasicAceContext") alloc] init] autorelease];
+    id obj = [objc_getClass("AceObject") aceObjectWithDictionary:dict context:ctx];
+    
+    return obj;
+}
+
+BOOL SessionSend(int type, NSDictionary *dict) {
+	if (!s_lastSession) return NO;
+	if (!dict)			return NO;
+    
+    id obj = AECreateAceObjectFromDictionary(dict);
+    if (!obj) return NO;
+    
+    if (type == 0)
+    	_logos_orig$ADHooks$ADSession$_handleAceObject$(s_lastSession, @selector(_handleAceObject:), obj);
+    else if (type == 1)
+    	_logos_orig$ADHooks$ADSession$sendCommand$(s_lastSession, @selector(sendCommand:), obj);
+    
+    return YES;
+}
+
+//############### Constructor
+%ctor {
+    NSAutoreleasePool* pool = [NSAutoreleasePool new];
+    
+	NSString* bundleIdent = [[NSBundle mainBundle] bundleIdentifier];
+    NSLog(@"[AssistantExtensions] Loading into %@", bundleIdent);
+    
+    %init;
+    
+    if ([bundleIdent isEqualToString:@"com.apple.springboard"]) {
+        %init(SBHooks);
+        [[AESpringBoardMsgCenter alloc] init];
+        
+        AESupportInit();
+    }
+    
+    else if ([bundleIdent isEqualToString:@"com.apple.AssistantServices"]) {   
+        %init(ADHooks);
+        [[AEAssistantdMsgCenter alloc] init];
+    }
+    
+    [pool drain];
+}

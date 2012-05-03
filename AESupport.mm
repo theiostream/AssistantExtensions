@@ -21,74 +21,45 @@
 
 #import <VoiceServices.h>
 
-template <typename T>
-inline const T& my_min(const T& a, const T& b)
-{
-    return a<b?a:b;
-}
-
-
-
-bool AESendToClient(NSDictionary* aceObject)
-{
-    if (InSpringBoard())
-    {
+bool AESendToClient(NSDictionary* aceObject) {
+    if (InSpringBoard()) {
         NSDictionary* resp = IPCCallResponse(@"me.k3a.AssistantExtensions.ad", @"Send2Client", 
                                              [NSDictionary dictionaryWithObject:aceObject forKey:@"object"]);
         return [[resp objectForKey:@"reply"] boolValue];
     }
-    else
-    {
-        return SessionSend(kSendToClient, aceObject);
-    }
+    
+    return SessionSend(kSendToClient, aceObject);
 }
-bool AESendToServer(NSDictionary* aceObject)
-{
-    if (InSpringBoard())
-    {
+
+bool AESendToServer(NSDictionary* aceObject) {
+  	if (InSpringBoard()) {
         NSDictionary* resp = IPCCallResponse(@"me.k3a.AssistantExtensions.ad", @"Send2Server", 
                                              [NSDictionary dictionaryWithObject:aceObject forKey:@"object"]);
         return [[resp objectForKey:@"reply"] boolValue];
     }
-    else
-    {
-        return SessionSend(kSendToServer, aceObject);
-    }
+    
+    return SessionSend(kSendToServer, aceObject);
 }
 
 static VSSpeechSynthesizer* s_synth = nil;
 
-void AESupportInit(bool springBoard)
-{
-    if (springBoard)
-    {
-        s_synth = [[VSSpeechSynthesizer alloc] init];
-        [s_synth setVoice:@"Samantha"];
-        // TODO: set correct voice based on language
-    }
-}
-void AESupportShutdown()
-{
-    [s_synth release];
+void AESupportInit() {
+	s_synth = [[VSSpeechSynthesizer alloc] init];
+	[s_synth setVoice:@"Samantha"];
+	// TODO: set correct voice based on language
 }
 
-void AESay(NSString* text, NSString* lang)
-{
+void AESay(NSString* text, NSString* lang) {
     if (InSpringBoard())
-    {
-        //static Class _SBAssistantController = objc_getClass("SBAssistantController");
-        //[(SBAssistantController*)[_SBAssistantController sharedInstance] _say:text];
-        
-        [s_synth startSpeakingString:text withLanguageCode:lang];
-    }
+       [s_synth startSpeakingString:text withLanguageCode:lang];
+       
     else
         IPCCall(@"me.k3a.AssistantExtensions.ad", @"Say", 
                         [NSDictionary dictionaryWithObjectsAndKeys:text,@"text",lang,@"lang", nil]);
 }
 
 
-NSString* AEGetSystemLanguage()
-{
+NSString* AEGetSystemLanguage() {
     NSString *language = [[NSLocale preferredLanguages] objectAtIndex:0];
     /*NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
      NSArray* arrayLanguages = [userDefaults objectForKey:@"AppleLanguages"];
@@ -114,25 +85,11 @@ NSString* AEGetSystemLanguage()
     return [NSString stringWithUTF8String:lang];
 }
 
-NSString* AEGetAssistantLanguage()
-{
+NSString* AEGetAssistantLanguage() {
     NSDictionary* dict = [NSDictionary dictionaryWithContentsOfFile:@"/var/mobile/Library/Preferences/com.apple.assistant.plist"];
     NSString* lang = [dict objectForKey:@"Session Language"];
-    if (![lang length])
-        return @"en-US";
-    else
+    if ([lang length])
         return lang;
+    
+    return @"en-US";
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

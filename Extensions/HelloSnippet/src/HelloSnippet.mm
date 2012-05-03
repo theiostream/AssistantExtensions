@@ -70,13 +70,15 @@
 {
     // since 1.0.2 developers can use this method for issuing snippets 
     // and utterance view right after the user activates assistant and gives the first request.
-    NSLog(@">> K3AHelloSnippet : Assistant activated");
+    NSLog(@">> K3AHelloSnippet : Assistant activated with context %@", ctx);
     
     // send views to the assistant
     [ctx sendAddViewsUtteranceView:@"Hello!"];
+    NSLog(@"SENT ADD VIEWS UTTERANCE VIEW");
     
     // completed..
     [ctx sendRequestCompleted];
+    NSLog(@"SENT REQUEST COMPLETED");
 }*/
 
 @end

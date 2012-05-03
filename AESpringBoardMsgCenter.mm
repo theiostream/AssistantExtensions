@@ -27,23 +27,7 @@ void SBCenterAssistantDismissed() {
     s_firstRequestMade = NO; 
 }
 
-@implementation AESpringBoardMsgCenter
-
 AESpringBoardMsgCenter* s_inst = nil;
-
-+(AESpringBoardMsgCenter*)sharedInstance
-{
-    return s_inst;
-}
-
-- (NSDictionary*)handleGetAcronyms:(NSString *)name userInfo:(NSDictionary *)userInfo {
-    return [NSDictionary dictionaryWithObjectsAndKeys:GetAcronyms(),@"acronyms", nil];
-}
-
-
-
-//---------------
-
 static NSMutableArray* s_tokens = nil;
 static NSMutableSet* s_handled_refs = nil;
 
@@ -71,35 +55,18 @@ static bool HandleSpeech(NSString* refId, NSString* text, NSArray* tokens, NSSet
             return true;
     }
     
-    // handle standard commands
-    //if (HandleSpeechSystemCmds(refId, text, tokens, tokenset)) return true;
-    //if (HandleSpeechToggles(refId, text, tokens, tokenset)) return true;
-    
-    // handle chatbot
-    /*if (!InChatMode() && 
-        [tokens count] == 2 && 
-        (   (
-        [[tokens objectAtIndex:0] isEqualToString:@"let's"] && ( [[tokens objectAtIndex:1] isEqualToString:@"chat"] || [[tokens objectAtIndex:1] isEqualToString:@"talk"]) )
-         || 
-         (  [[tokens objectAtIndex:0] isEqualToString:@"initiate"] && [[tokens objectAtIndex:1] isEqualToString:@"conversation"] )
-        )) // not yet in chat mode but chat requested
-    {
-        StartChatMode(refId);
-        
-        return true;
-    }
-    else if (InChatMode()) // in chat mode
-    {
-        if (HandleChat(refId, text, tokens, tokenset))
-            return true;
-    }
-    else */if (HandleSpeechExtensions(refId,text,tokens,tokenset)) // check extensions
+    if (HandleSpeechExtensions(refId,text,tokens,tokenset)) // check extensions
     {
         s_reqHandledByExtension = true;
         return true;
     }
     
     return false; // not handled
+}
+
+@implementation AESpringBoardMsgCenter
++ (AESpringBoardMsgCenter*)sharedInstance {
+    return s_inst;
 }
 
 -(NSDictionary*)handleServer2Client:(NSString*)name userInfo:(NSDictionary*)userInfo
@@ -175,7 +142,7 @@ static bool HandleSpeech(NSString* refId, NSString* text, NSArray* tokens, NSSet
                 NSMutableArray* interpTokens = [NSMutableArray array];
                 
                 for (id tok in tokens)
-                {
+				{
                     int confidenceScore = [[[tok objectForKey:@"properties"] objectForKey:@"confidenceScore"] intValue];
                     NSString *tokText = [[tok objectForKey:@"properties"] objectForKey:@"text"];
                     if (tokText) 
@@ -475,8 +442,7 @@ static void ReloadPrefs(CFNotificationCenterRef center, void *observer, CFString
 }
 
 - (id)init {
-	if((self = [super init])) 
-    {
+	if ((self = [super init])) {
         NSLog(@"************* AssistantExtensions SpringBoard MsgCenter Startup *************");
         
         s_inst = self;
@@ -495,7 +461,6 @@ static void ReloadPrefs(CFNotificationCenterRef center, void *observer, CFString
 		center = [[CPDistributedMessagingCenter centerNamed:@"me.k3a.AssistantExtensions"] retain];
 		[center runServerOnCurrentThread];
         
-        [center registerForMessageName:@"GetAcronyms" target:self selector:@selector(handleGetAcronyms:userInfo:)];
         [center registerForMessageName:@"Server2Client" target:self selector:@selector(handleServer2Client:userInfo:)];
         [center registerForMessageName:@"Client2Server" target:self selector:@selector(handleClient2Server:userInfo:)];
         [center registerForMessageName:@"ActivateAssistant" target:self selector:@selector(handleActivateAssistant:userInfo:)];

@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import <AppSupport/CPDistributedMessagingCenter.h>
 #import <CoreLocation/CoreLocation.h>
+#import "OS5Additions.h"
 
 /// Distributed messaging center for assistantd process.
 @interface AEAssistantdMsgCenter : NSObject <CLLocationManagerDelegate>

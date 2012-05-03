@@ -14,8 +14,7 @@
 
 bool AESendToClient(NSDictionary* aceObject);
 bool AESendToServer(NSDictionary* aceObject);
-void AESupportInit(bool springBoard);
-void AESupportShutdown();
+void AESupportInit();
 void AESay(NSString* text, NSString* lang = @"en-US");
 NSString* AEGetSystemLanguage();
 NSString* AEGetAssistantLanguage();

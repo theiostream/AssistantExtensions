@@ -49,16 +49,15 @@
 }
 
 +(id)findExtensionNamed:(NSString*)name;
-+(BOOL)initExtensions;
-+(void)reloadExtensions;
++(void)initExtensions;
 +(void)shutdownExtensions;
 +(void)switchToLanguage:(NSString*)lang;
 +(NSArray*)allExtensionsNames;
 +(NSArray*)allExtensions;
 
-+(id)extensionWithName:(NSString*)name;
++(id)extensionWithPath:(NSString*)path andName:(NSString *)name;
 
--(id)initWithName:(NSString*)name;
+-(id)initWithPath:(NSString*)path andName:(NSString *)name;
 -(NSString*)name;
 -(NSString*)displayName;
 -(NSString*)author;

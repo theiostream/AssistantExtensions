@@ -5,17 +5,9 @@
 //  Created by Kexik on 12/26/11.
 //  Copyright (c) 2011 __MyCompanyName__. All rights reserved.
 //
-#include "AEExtension.h"
 
-#include <dlfcn.h>
-#include <unistd.h> // sleep
-
-// directory listing
-#include <sys/types.h>
-#include <dirent.h>
-#include <sys/stat.h>
-#include <objc/runtime.h>
-
+# include <objc/runtime.h>
+#import "AEExtension.h"
 #import "main.h"
 #import "AESupport.h"
 #import "AEX.h"
@@ -23,89 +15,28 @@
 
 static NSMutableDictionary* s_exDict = nil;
 
-const char* extensionsPath = EXTENSIONS_PATH; // slash must be at the end
-const int extensionsPathLen = strlen(extensionsPath);
-
 #pragma mark - EXTENSION CLASS
 
 @implementation AEExtension
 
-+(BOOL)initExtensions
-{
++ (void)initExtensions {
     s_exDict = [[NSMutableDictionary alloc] init];
     
-    struct dirent *direntp = NULL;
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSString *extensionsPath = @EXTENSIONS_PATH;
     
-    DIR *dirp = opendir(extensionsPath);
-    if (dirp == NULL)
-    {
-        NSLog(@"AE ERROR: Error opening extensions dir %s. No extensions yet?", extensionsPath);
-        return FALSE;
+    NSArray *files = [fm contentsOfDirectoryAtPath:extensionsPath error:nil];
+    for (NSString *file in files) {
+    	if ([[file pathExtension] isEqualToString:@"assistantExtension"] ||
+    		[[file pathExtension] isEqualToString:@"bundle"]) {
+    		
+    		AEExtension *ex = [AEExtension extensionWithPath:[extensionsPath stringByAppendingString:file] andName:file];
+    		if (ex) [s_exDict setObject:ex forKey:[file lowercaseString]];
+    	}
     }
-    
-    NSLog(@"AE: Loading Extensions:");
-    while ((direntp = readdir(dirp)) != NULL)
-    {
-        // ignore special directories
-        if ((strcmp(direntp->d_name, ".") == 0) ||
-            (strcmp(direntp->d_name, "..") == 0))
-            continue;
-        
-        // if not bundle, skip
-        if (!strstr(direntp->d_name, ".assistantExtension")) continue;
-        
-        //TODO: remove .siribundle extension from name
-         
-        NSString* name = [NSString stringWithUTF8String:direntp->d_name];
-        
-        AEExtension* ex = [AEExtension extensionWithName:name];
-        if (ex) [s_exDict setObject:ex forKey:[name lowercaseString]];
-    }
-    
-    // finalize resources
-    closedir(dirp);    
-    
-    return TRUE;
 }
 
-+(void)reloadExtensions
-{
-    NSLog(@"AE: Reloading Extensions:");
-    [s_exDict removeAllObjects];
-    
-    struct dirent *direntp = NULL;
-    
-    DIR *dirp = opendir(extensionsPath);
-    if (dirp == NULL)
-    {
-        NSLog(@"AE ERROR: Error opening extensions dir %s. No extensions yet?", extensionsPath);
-        return;
-    }
-    
-    while ((direntp = readdir(dirp)) != NULL)
-    {
-        /* Ignore special directories. */
-        if ((strcmp(direntp->d_name, ".") == 0) ||
-            (strcmp(direntp->d_name, "..") == 0))
-            continue;
-        
-        // if not bundle, skip
-        if (!strstr(direntp->d_name, ".assistantExtension")) continue;
-        
-        //TODO: remove .siribundle extension from name
-        
-        NSString* name = [NSString stringWithUTF8String:direntp->d_name];
-        
-        AEExtension* ex = [AEExtension extensionWithName:name];
-        if (ex) [s_exDict setObject:ex forKey:[name lowercaseString]];
-    }
-    
-    /* Finalize resources. */
-    closedir(dirp);
-}
-
-+(void)shutdownExtensions
-{
++(void)shutdownExtensions {
     [s_exDict release];
 }
 
@@ -143,61 +74,38 @@ const int extensionsPathLen = strlen(extensionsPath);
     return ex;
 }
 
-+(id)extensionWithName:(NSString*)name
-{
-    return [[[AEExtension alloc] initWithName:name] autorelease];
++(id)extensionWithPath:(NSString*)name andName:(NSString *)name_ {
+    return [[[AEExtension alloc] initWithPath:name andName:name_] autorelease];
 }
 
--(id)initWithName:(NSString*)name
+-(id)initWithPath:(NSString*)name andName:(NSString *)name_
 {
-    if (_initialized) 
-    {
-        NSLog(@"AE ERROR: Extension already initialized!");
+    if (_initialized)  {
+        NSLog(@"[AssistantExtensions] ERROR: Extension %@ already initialized!", name_);
         return nil;
     }
     
     if ( (self = [super init]) )
     {
-        NSLog(@"-> %@", name);
+        NSLog(@"[AssistantExtensions] Loading %@", name_);
         
-        char full_name[_POSIX_PATH_MAX + 1];
-        if ((extensionsPathLen + strlen([name UTF8String]) + 1) > _POSIX_PATH_MAX)
-        {
+        _bundle = [[NSBundle bundleWithPath:name] retain];
+        if (!_bundle) {
+            NSLog(@"AE ERROR: Failed to open extension bundle for %@ (%@)!", name_, name);
             [self release];
             return nil;
         }
         
-        strcpy(full_name, extensionsPath);
-        strcat(full_name, [name UTF8String]);
-        
-        struct stat fstat;
-        if (stat(full_name, &fstat) < 0)
-        {
-            NSLog(@"AE ERROR: Extension Bundle at path %s cannot be found!", full_name);
-            [self release];
-            return nil;
-        }
-        
-        _bundle = [[NSBundle bundleWithPath:[NSString stringWithUTF8String:full_name]] retain];
-        if (!_bundle)
-        {
-            NSLog(@"AE ERROR: Failed to open extension bundle %@ (%s)!", name, full_name);
-            [self release];
-            return nil;
-        }
-        
-        if (![_bundle load])
-        {
-            NSLog(@"AE ERROR: Failed to load extension bundle %@ (wrong CFBundleExecutable? Missing? Not signed?)!", name);
+        if (![_bundle load]) {
+            NSLog(@"AE ERROR: Failed to load extension bundle %@ (wrong CFBundleExecutable? Missing? Not signed?)!", name_);
             [self release];
             return nil;
         }
         
         // load principal class
         Class principal = [_bundle principalClass];
-        if (!principal)
-        {
-            NSLog(@"AE ERROR: Extension %@ doesn't provide a NSPrincipalClass!", name);
+        if (!principal) {
+            NSLog(@"AE ERROR: Extension %@ doesn't provide a NSPrincipalClass!", name_);
             [self release];
             return nil;
         }
@@ -207,8 +115,7 @@ const int extensionsPathLen = strlen(extensionsPath);
         if (!verReq && [_principal respondsToSelector:@selector(versionRequirement)])
             verReq = [_principal versionRequirement];
         
-        if (verReq)
-        {
+        if (verReq) {
             NSArray* verReqArr = [verReq componentsSeparatedByString:@"."];
             NSString* ver = @AE_VERSION;
             NSArray* verArr = [ver componentsSeparatedByString:@"."];
@@ -216,17 +123,15 @@ const int extensionsPathLen = strlen(extensionsPath);
             int reqLen = [verReqArr count];
             int len = [verArr count];
             
-            int toProcess = (reqLen > len)?reqLen:len; // find highest
-            for (int i=0; i<toProcess; i++)
-            {
+            int toProcess = (reqLen > len) ? reqLen : len; // find highest
+            for (int i=0; i<toProcess; i++) {
                 int rr = 0;
                 int vv = 0;
                 if (i<reqLen) rr = [[verReqArr objectAtIndex:i] intValue];
                 if (i<len) vv = [[verArr objectAtIndex:i] intValue];
                 
-                if (rr > vv)
-                {
-                    NSLog(@"AE ERROR: Extension %@ requires AE %@ or newer but you have AE %@ installed!", name, verReq, ver);
+                if (rr > vv) {
+                    NSLog(@"AE ERROR: Extension %@ requires AE %@ or newer but you have AE %@ installed!", name_, verReq, ver);
                     [self release];
                     return nil;
                 }
@@ -238,15 +143,14 @@ const int extensionsPathLen = strlen(extensionsPath);
         _patterns = [[NSMutableArray alloc] init];
 
         _principal = [[principal alloc] initWithSystem:self];
-        if (!_principal)
-        {
-            NSLog(@"AE ERROR: Failed to initialize NSPrincipalClass from extension %@!", name);
+        if (!_principal) {
+            NSLog(@"AE ERROR: Failed to initialize NSPrincipalClass from extension %@!", name_);
             [self release];
             return nil;
         }
-        else if (![_principal conformsToProtocol:@protocol(SEExtension)])
-        {
-            NSLog(@"AE ERROR: Extension's NSPrincipalClass (%s) doesn't conform to SEExtension protocol!", object_getClassName(_principal));
+        
+        else if (![_principal conformsToProtocol:@protocol(SEExtension)]) {
+            NSLog(@"AE ERROR: Extension %@'s NSPrincipalClass (%s) doesn't conform to SEExtension protocol!", name_, object_getClassName(_principal));
             [self release];
             return nil;
         }

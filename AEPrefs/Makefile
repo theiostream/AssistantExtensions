@@ -24,7 +24,7 @@ internal-stage::
 	$(ECHO_NOTHING)cp entry.plist $(THEOS_STAGING_DIR)/Library/PreferenceLoader/Preferences/AEPrefs.plist$(ECHO_END)
 
 %.nib:
-	$(IBTOOL) --compile Resources/$(notdir $@) $*.xib
+	$(IBTOOL) $*.xib --compile Resources/$(notdir $@)
 
 test: all stage
 	ssh root@ufoxy "rm -rf /Library/PreferenceBundles/AEPrefs.bundle ; killall Preferences || true"

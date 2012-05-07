@@ -10,6 +10,7 @@
 % TODO:
 % - Hook SBAssistantUIPluginManager instead of creating .assistntUIBundle
 % - UI improvements for AssistantGuide
+% - Add AEDevHelper hooks to here
 %*/
 
 //############### Declarations
@@ -191,7 +192,6 @@ id AECreateAceObjectFromDictionary(NSDictionary *dict);
     NSDictionary* respObj = [resp objectForKey:@"object"];
     
     if (respObj) %orig(AECreateAceObjectFromDictionary(respObj));
-    else		 %orig;
 }
 
 - (void)sendCommand:(id)cmd {
@@ -202,7 +202,6 @@ id AECreateAceObjectFromDictionary(NSDictionary *dict);
     NSDictionary* respObj = [resp objectForKey:@"object"];
     
     if (respObj) %orig(AECreateAceObjectFromDictionary(respObj));
-    else		 %orig;
 }
 %end
 %end

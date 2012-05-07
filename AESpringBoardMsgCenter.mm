@@ -87,8 +87,8 @@ static bool HandleSpeech(NSString* refId, NSString* text, NSArray* tokens, NSSet
     //NSLog(@"AE: handleServer2Client: %@", userInfo);
     
     // check whether it is already handled ref
-    if ([s_handled_refs containsObject:pRefId])
-    {
+    NSLog(@"AE: pRefId: %@", pRefId);
+    if ([s_handled_refs containsObject:pRefId]) {
         NSLog(@"AE: Ignoring original server->client %@ object.", pClass);
         return [NSDictionary dictionaryWithObjectsAndKeys:nil,@"object", nil];
     }
@@ -187,6 +187,7 @@ static bool HandleSpeech(NSString* refId, NSString* text, NSArray* tokens, NSSet
         if (HandleSpeech(pRefId, text, s_tokens, tokenset))
         {
             // add this refId to the list of handled refs and ignore additional server responses for it
+            NSLog(@"(theiostream) HandleSpeech was a success.");
             if (pRefId) [s_handled_refs addObject:pRefId];
         }
         
@@ -269,6 +270,7 @@ static bool HandleSpeech(NSString* refId, NSString* text, NSArray* tokens, NSSet
         if (HandleSpeech(refId, utterance, tokens, tokenset))
         {
             // handled
+            NSLog(@"[AE] Client->server returning nil (theiostream)");
             return [NSDictionary dictionaryWithObjectsAndKeys:nil,@"object", nil];
         }
     }

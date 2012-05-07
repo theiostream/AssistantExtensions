@@ -1,0 +1,7 @@
+############
+HelloSnippet!
+
+The XIB included in this project is *compiled NIB* and *not editable*.
+For an editable version, head to k3a's version of AssistantExtensions at https://github.com/k3a/AssistantExtensions/blob/master/Extensions/HelloSnippet/src/HelloNib.xib
+
+(Please note that I (theiostream) completely despise Interface Builder, the reason this NIB was kept here is to not stop showing k3a's point that you can make Assistant Snippets with Interface Builder.)

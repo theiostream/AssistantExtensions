@@ -1,6 +1,6 @@
 include theos/makefiles/common.mk
 
-SUBPROJECTS = AEPrefs Extensions/*
+SUBPROJECTS = AEPrefs jpsupport Extensions/*
 
 TWEAK_NAME = AssistantExtensions
 AssistantExtensions_FILES  = AEAssistantdMsgCenter.mm AEContext.mm AEExtension.mm AESpringBoardMsgCenter.mm AEStringAdditions.mm AESupport.mm SiriObjects.mm AEX.mm

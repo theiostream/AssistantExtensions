@@ -1,2 +1,6 @@
 _/
 .DS_Store
+*.xcodeproj
+obj/
+.theos/
+*.deb

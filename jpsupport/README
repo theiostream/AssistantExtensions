@@ -1,0 +1,8 @@
+#######
+JPSupport
+Japanese Siri below iOS 5.1
+#######
+
+Requires libsubstrate.dylib with MSFindSymbol to compile (or deal with linking yourself, if you manage. Contribute?)
+
+$ git clone git://git.saurik.com/mobilesubstrate.git

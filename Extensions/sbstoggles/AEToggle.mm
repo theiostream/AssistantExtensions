@@ -15,7 +15,7 @@
 
 //#include "AESupport.h"
 //#include "AESpringBoardMsgCenter.h"
-#import "../AEStringAdditions.h"
+#import "../../AEStringAdditions.h"
 #include "SiriObjects.h"
 
 static NSMutableDictionary* s_toggleDict = nil;

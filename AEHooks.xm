@@ -185,6 +185,7 @@ id AECreateAceObjectFromDictionary(NSDictionary *dict);
 %group ADHooks
 %hook ADSession
 - (void)_handleAceObject:(id)aceObj {
+    %log;
     s_lastSession = self;
     
     NSDictionary* dict = [aceObj dictionary];

@@ -1,5 +1,5 @@
 #import "AEStandardCommands.h"
-#import "../AEStringAdditions.h"
+#import "../../AEStringAdditions.h"
 
 #import <objc/runtime.h>
 #import <libdisplaystack/DSDisplayController.h>

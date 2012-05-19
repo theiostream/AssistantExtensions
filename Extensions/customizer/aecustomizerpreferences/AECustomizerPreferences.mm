@@ -4,7 +4,6 @@
 #import <Preferences/PSTextFieldSpecifier.h>
 
 #define PLIST_PATH "/var/mobile/Library/Preferences/me.k3a.ae.customizer.plist"
-static BOOL stopIt = NO;
 
 static NSUInteger GetIndexForSpec(PSListController *list, PSSpecifier *spec) {
 	NSUInteger index = (NSUInteger)[list indexOfSpecifier:spec];

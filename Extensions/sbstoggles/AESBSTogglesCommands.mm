@@ -1,7 +1,7 @@
 #import "AESBSTogglesCommands.h"
 
 #import "AEToggle.h"
-#import "../AEStringAdditions.h"
+#import "../../AEStringAdditions.h"
 
 @implementation AESBSTogglesCommands
 

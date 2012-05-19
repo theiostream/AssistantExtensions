@@ -307,8 +307,9 @@ static NSMutableDictionary* s_exDict = nil;
             if ([cmd respondsToSelector:@selector(handleSpeech:tokens:tokenSet:context:)] && 
                 [cmd handleSpeech:text tokens:tokens tokenSet:tokenset context:ctx])
             {
-                if ([ctx wasListenAfterSpeaking]) // needs this extension next time?
+                if ([ctx wasListenAfterSpeaking]) { // needs this extension next time?
                     _nextCommand = [cmd retain];
+                }
                 
                 return cmd;
             }

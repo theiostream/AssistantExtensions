@@ -233,8 +233,9 @@ static BOOL AEPreviewTweet(NSString* tweetText)
 	return YES;
 }
 
--(BOOL)handleSayMatch:(id<AEPatternMatch>)match context:(id<SEContext>)ctx {
-    //ahjiascud
+- (BOOL)handleSayMatch:(id<AEPatternMatch>)match context:(id<SEContext>)ctx {
+	[ctx sendAddViewsUtteranceView:[match namedElement:@"what"]];
+    [ctx sendRequestCompleted];
     return YES;
 }
 
@@ -263,7 +264,6 @@ static BOOL AEPreviewTweet(NSString* tweetText)
 }
 
 - (BOOL)handleBatteryGetterMatch:(id<AEPatternMatch>)match context:(id<SEContext>)ctx {
-    
     static Class _SBUIController = objc_getClass("SBUIController");
     if (!_SBUIController) return NO;
     

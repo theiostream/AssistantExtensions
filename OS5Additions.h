@@ -1,5 +1,9 @@
 #import <CoreLocation/CoreLocation.h>
 
+@interface UIApplication (AESpringBoard)
+- (void)activateAssistantWithOptions:(id)options withCompletion:(id)completion;
+@end
+
 @interface AFConnection : NSObject
 - (void)clearContext;
 - (void)startSpeechRequest;
@@ -16,11 +20,6 @@
 - (BOOL)isDeviceLocked;
 @end
 
-@interface SpringBoard : NSObject
-- (void)activateAssistantWithOptions:(id)fp8 withCompletion:(id)fp;
-@end
-
-
 @interface SBAwayView : NSObject
 - (void)hideBulletinView;
 - (void)showBulletinView;
@@ -33,11 +32,11 @@
 - (void)dismissAssistant;
 - (void)dismissAssistantWithFade:(double)fp8;
 - (void)_submitQuery:(id)fp8;
--(AFConnection*)_connection;
+- (AFConnection*)_connection;
 - (void)_startProcessingRequest;
--(void)expectsFaceContact;
--(void)_say:(NSString*)what;
--(void)_say:(NSString*)what forced:(BOOL)forced;
+- (void)expectsFaceContact;
+- (void)_say:(NSString*)what;
+- (void)_say:(NSString*)what forced:(BOOL)forced;
 @end
 
 @interface SBBrightnessController : NSObject
@@ -55,7 +54,7 @@
 @end
 
 @interface CLLocationManager (AEIOS5)
--(id)initWithEffectiveBundle:(NSBundle*)b;
+- (id)initWithEffectiveBundle:(NSBundle*)b;
 @end
 
 @interface SBAppSwitcherController : NSObject
@@ -65,32 +64,15 @@
 @end
 
 @interface SBAssistantGuideSectionModel : NSObject
-{
-    NSString *_title;
-    NSMutableArray *_phrases;
-}
-
 - (id)init;
 - (void)dealloc;
 - (NSMutableArray*)phrases;
 - (void)setPhrases:(NSMutableArray*)fp8;
 - (id)title;
 - (void)setTitle:(id)fp8;
-
 @end
 
 @interface SBAssistantGuideDomainModel : NSObject
-{
-    NSString *_name;
-    NSString *_tagPhrase;
-    NSString *_displayIdentifier;
-    NSString *_bundleIdentifier;
-    NSMutableArray *_requiredApps;
-    NSMutableArray *_requiredCapabilities;
-    NSString *_sectionFilename;
-    NSMutableArray *_sections;
-}
-
 - (id)init;
 - (void)dealloc;
 - (id)sections;
@@ -108,19 +90,9 @@
 - (void)setTagPhrase:(id)fp8;
 - (id)name;
 - (void)setName:(id)fp8;
-
 @end
 
 @interface SBAssistantGuideDomainListCell : UITableViewCell
-{
-    id _delegate;
-    UIImageView *_iconView;
-    UILabel *_tagPhraseLabel;
-    UILabel *_domainNameLabel;
-    UIImageView *_chevronView;
-    UIImageView *_separator;
-}
-
 + (float)rowHeight;
 - (id)initWithReuseIdentifier:(id)fp8;
 - (void)dealloc;
@@ -133,19 +105,13 @@
 - (void)layoutSubviews;
 - (id)delegate;
 - (void)setDelegate:(id)fp8;
-
 @end
 
 @interface SBAssistantGuideModel : NSObject
-{
-    NSMutableArray *_domains;
-}
-
 - (id)init;
 - (void)dealloc;
 - (void)_loadAllDomains;
 - (id)allDomains;
-
 @end
 
 //-------------------------------------------------------------------------------
@@ -190,11 +156,6 @@
 @end
 
 @interface AceObject : NSObject <AceObject>
-{
-    NSMutableDictionary *_dict;
-    id <AceContext> _context;
-}
-
 + (id)aceObjectWithGenericCommand:(id)arg1 context:(id)arg2;
 + (id)_aceObjectWithMutableDictionary:(id)arg1 context:(id)arg2;
 + (id)aceObjectArrayWithDictionaryArray:(id)arg1 baseClass:(Class)arg2 context:(id)arg3;
@@ -227,13 +188,9 @@
 - (id)initWithDictionary:(id)arg1;
 - (id)context;
 - (id)dictionary;
-
 @end
 
 @interface SAUIConfirmationOptions : AceObject <SAAceSerializable>
-{
-}
-
 + (id)confirmationOptionsWithDictionary:(id)arg1 context:(id)arg2;
 + (id)confirmationOptions;
 @property(copy, nonatomic) NSArray *cancelCommands;
@@ -247,13 +204,9 @@
 @property(copy, nonatomic) NSString *submitLabel;
 - (id)encodedClassName;
 - (id)groupIdentifier;
-
 @end
 
 @interface SAAceView : AceObject <SAAceSerializable, SADeferredKeyObject>
-{
-}
-
 + (id)aceView;
 + (id)aceViewWithDictionary:(id)arg1 context:(id)arg2;
 @property(retain, nonatomic) NSNumber *listenAfterSpeaking;
@@ -262,31 +215,19 @@
 - (id)deferredKeys;
 - (id)encodedClassName;
 - (id)groupIdentifier;
-
 @end
 
 @interface SAUISnippet : SAAceView
-{
-}
-
 + (id)snippetWithDictionary:(id)arg1 context:(id)arg2;
 + (id)snippet;
 @property(retain, nonatomic) SAUIConfirmationOptions *confirmationOptions;
 @property(copy, nonatomic) NSArray *otherOptions;
 - (id)encodedClassName;
 - (id)groupIdentifier;
-
 @end
 
-
 @protocol AFUISnippetDelegate;
-
 @interface AFUISnippetController : NSObject
-{
-    id <AFUISnippetDelegate> _delegate;
-    int _phase;
-}
-
 - (id)init;
 - (void)dealloc;
 - (void)viewDidDisappear;
@@ -312,12 +253,7 @@
 - (void)assistantInterrupted;
 - (void)markWithStamp:(int)arg1;
 - (void)setIsLastInTranscript:(BOOL)arg1;
-
 @end
 
 @interface ADSession : NSObject
-
 @end
-
-
-

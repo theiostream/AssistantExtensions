@@ -9,16 +9,6 @@
 #include "shared.h"
 #include "main.h"
 
-# include <sys/types.h>
-# include <sys/socket.h>
-# include <sys/ioctl.h>
-# include <netinet/in.h>
-# include <netdb.h>
-# include <pthread.h>
-#include <sys/stat.h>
-#include <stdlib.h>
-#include <unistd.h>
-
 #import <VoiceServices.h>
 
 bool AESendToClient(NSDictionary* aceObject) {
@@ -70,14 +60,13 @@ NSString* AEGetSystemLanguage() {
     
     unsigned sepIdx = strlen(lang);
     bool afterSep = false;
-    for (unsigned i=0; i<strlen(lang); i++)
-    {
-        if (lang[i] == '_' || lang[i] == '-')
-        {
+    for (unsigned i=0; i<strlen(lang); i++) {
+        if (lang[i] == '_' || lang[i] == '-') {
             lang[i] = '-';
             sepIdx = i;
             afterSep = true;
         }
+        
         else if (afterSep)
             lang[i] = toupper(lang[i]);
     }

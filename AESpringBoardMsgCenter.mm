@@ -14,54 +14,38 @@
 #include "main.h"
 #include "AEStringAdditions.h"
 #include "AESupport.h"
-
 #include "AEExtension.h"
 
-@interface UIApplication (AESpringBoard)
-- (void)activateAssistantWithOptions:(id)options withCompletion:(id)completion;
-@end
-
-static BOOL s_firstRequestMade = NO; 
-
-void SBCenterAssistantDismissed() {
-    s_firstRequestMade = NO; 
+static void ReloadPrefs(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo) {
+    [[AESpringBoardMsgCenter sharedInstance] reloadPrefs];
 }
 
-AESpringBoardMsgCenter* s_inst = nil;
+static BOOL s_firstRequestMade = NO;
+static BOOL buildMessageLock = NO;
+
 static NSMutableArray* s_tokens = nil;
 static NSMutableSet* s_handled_refs = nil;
 
-static bool s_reqHandledByExtension = false;
-
-void RequestCompleted()
-{
-    s_reqHandledByExtension = false;
+void SBCenterAssistantDismissed() {
+    s_firstRequestMade = NO;
+    buildMessageLock = NO;
 }
 
-static bool HandleSpeech(NSString* refId, NSString* text, NSArray* tokens, NSSet* tokenset)
-{
+void RequestCompleted() {
+    // Do nothing. Just keep this function to avoid meh.
+    //s_reqHandledByExtension = false;
+}
+
+static bool HandleSpeech(NSString* refId, NSString* text, NSArray* tokens, NSSet* tokenset) {
     // inform all extensions that the first request has been made and assistant is activated
-    if (!s_firstRequestMade)
-    {
+    if (!s_firstRequestMade) {
         s_firstRequestMade = YES;
         
         for (AEExtension* ex in [AEExtension allExtensions])
             [ex callAssistantActivated];
     }
-        
-    if (s_reqHandledByExtension)
-    {
-        if (HandleSpeechExtensions(refId,text,tokens,tokenset))
-            return true;
-    }
     
-    if (HandleSpeechExtensions(refId,text,tokens,tokenset)) // check extensions
-    {
-        s_reqHandledByExtension = true;
-        return true;
-    }
-    
-    return false; // not handled
+    return HandleSpeechExtensions(refId, text, tokens, tokenset);
 }
 
 @implementation AESpringBoardMsgCenter
@@ -69,22 +53,19 @@ static bool HandleSpeech(NSString* refId, NSString* text, NSArray* tokens, NSSet
     return s_inst;
 }
 
--(NSDictionary*)handleServer2Client:(NSString*)name userInfo:(NSDictionary*)userInfo
-{
+-(NSDictionary*)handleServer2Client:(NSString*)name userInfo:(NSDictionary*)userInfo {   
     NSDictionary* object = [userInfo objectForKey:@"object"];
-    NSString* pClass = [object objectForKey:@"class"];
-    NSString* pRefId = [object objectForKey:@"refId"];
-    if (!pRefId) pRefId = [object objectForKey:@"aceId"];
     
-    // is tweak disabled?
     NSNumber* tweakEnabled = [self prefForKey:@"enabled"];
-    if (tweakEnabled && ![tweakEnabled boolValue])
-    {
+    if (tweakEnabled && ![tweakEnabled boolValue]) {
         NSLog(@"AE: Disabled - not doing anything");
         return [NSDictionary dictionaryWithObjectsAndKeys:object,@"object", nil]; // send normally
     }
     
-    //NSLog(@"AE: handleServer2Client: %@", userInfo);
+    NSString* pClass = [object objectForKey:@"class"];
+    NSString* pRefId = [object objectForKey:@"refId"];
+    if (!pRefId) pRefId = [object objectForKey:@"aceId"];
+	NSDictionary* pProps = [object objectForKey:@"properties"];
     
     // check whether it is already handled ref
     NSLog(@"AE: pRefId: %@", pRefId);
@@ -93,34 +74,29 @@ static bool HandleSpeech(NSString* refId, NSString* text, NSArray* tokens, NSSet
         return [NSDictionary dictionaryWithObjectsAndKeys:nil,@"object", nil];
     }
     
+    // handle message locks
+   	if ([pClass isEqualToString:@"DomainObjectCreate"])
+   		buildMessageLock = YES;
+   		
+   	else if (buildMessageLock && ([pClass isEqualToString:@"DomainObjectCommit"] || [pClass isEqualToString:@"DomainObjectCancel"]))
+   		buildMessageLock = NO;
+    
     // try raw objects extension first
-    bool handled = NO;
-    for (AEExtension* ex in [AEExtension allExtensions])
-    {
-        if (object && [ex handlesServerToClientClass:pClass])
-        {
-            NSMutableDictionary* deepMutableCopy = (NSMutableDictionary*)
-                CFPropertyListCreateDeepCopy(kCFAllocatorDefault, (CFDictionaryRef)object, kCFPropertyListMutableContainers);
+    for (AEExtension* ex in [AEExtension allExtensions]) {
+        if (object && [ex handlesServerToClientClass:pClass]) {
+            NSMutableDictionary* deepMutableCopy = (NSMutableDictionary*)CFPropertyListCreateDeepCopy(kCFAllocatorDefault, (CFDictionaryRef)object, kCFPropertyListMutableContainers);
             [deepMutableCopy autorelease];
             
             object = [ex serverToClient:deepMutableCopy context:[AEContext contextWithRefId:pRefId]];
-            handled = YES;
+            return [NSDictionary dictionaryWithObjectsAndKeys:object,@"object", nil];
         }
     }
     
-    if (handled) return [NSDictionary dictionaryWithObjectsAndKeys:object,@"object", nil];
-    
-    //NSString* pGroup = [dict objectForKey:@"group"];
-    // NSString* pAceId = [dict objectForKey:@"aceId"];
-    NSDictionary* pProps = [object objectForKey:@"properties"];
-    
-    //NSLog(@">> ADAceConnection::_handleAceObject: [SERVER] %@", dict);
-
     // we will intercept SpeechRecognized only
-    if ([pClass isEqualToString:@"SpeechRecognized"])
-    {
-        // call orig
+    if ([pClass isEqualToString:@"SpeechRecognized"]) {
         IPCCall(@"me.k3a.AssistantExtensions.ad", @"Send2Client", [NSDictionary dictionaryWithObjectsAndKeys:object,@"object", nil]);
+        if (buildMessageLock)
+   			return [NSDictionary dictionaryWithObjectsAndKeys:nil,@"object", nil];
         
         [s_tokens removeAllObjects];
         
@@ -197,8 +173,7 @@ static bool HandleSpeech(NSString* refId, NSString* text, NSArray* tokens, NSSet
     return [NSDictionary dictionaryWithObjectsAndKeys:object,@"object", nil]; // send normally
 }
 
--(NSDictionary*)handleClient2Server:(NSString*)name userInfo:(NSDictionary*)userInfo
-{
+-(NSDictionary*)handleClient2Server:(NSString*)name userInfo:(NSDictionary*)userInfo {
     NSDictionary* object = [userInfo objectForKey:@"object"];
     NSString* clsName = [object objectForKey:@"class"];
     NSString* refId = [object objectForKey:@"refId"];
@@ -239,24 +214,17 @@ static bool HandleSpeech(NSString* refId, NSString* text, NSArray* tokens, NSSet
     }
     
     // try raw objects extension first
-    bool handled = NO;
-    for (AEExtension* ex in [AEExtension allExtensions])
-    {
-        if ([ex handlesClientToServerClass:clsName])
-        {
-            NSMutableDictionary* deepMutableCopy = (NSMutableDictionary*)
-            CFPropertyListCreateDeepCopy(kCFAllocatorDefault, (CFDictionaryRef)object, kCFPropertyListMutableContainers);
+    for (AEExtension* ex in [AEExtension allExtensions]) {
+        if ([ex handlesClientToServerClass:clsName]) {
+            NSMutableDictionary* deepMutableCopy = (NSMutableDictionary*)CFPropertyListCreateDeepCopy(kCFAllocatorDefault, (CFDictionaryRef)object, kCFPropertyListMutableContainers);
             [deepMutableCopy autorelease];
             
             object = [ex clientToServer:deepMutableCopy context:[AEContext contextWithRefId:refId]];
-            handled = YES;
+            return [NSDictionary dictionaryWithObjectsAndKeys:object,@"object", nil];
         }
     }
     
-    if (handled) return [NSDictionary dictionaryWithObjectsAndKeys:object,@"object", nil];
-    
-    if (clsName && [clsName isEqualToString:@"StartCorrectedSpeechRequest"])
-    {
+    if (clsName && [clsName isEqualToString:@"StartCorrectedSpeechRequest"]) {
         NSString* refId = [object objectForKey:@"refId"];
         if (!refId || [refId length] == 0) refId = [object objectForKey:@"aceId"];
         
@@ -278,37 +246,31 @@ static bool HandleSpeech(NSString* refId, NSString* text, NSArray* tokens, NSSet
     return [NSDictionary dictionaryWithObjectsAndKeys:object,@"object", nil];
 }
 
--(NSDictionary*)handleDismissAssistant:(NSString*)name userInfo:(NSDictionary*)userInfo
-{
+-(NSDictionary*)handleDismissAssistant:(NSString*)name userInfo:(NSDictionary*)userInfo {
     NSLog(@"AE: Hiding the assistant");
     static Class _SBAssistantController = objc_getClass("SBAssistantController");
     [(SBAssistantController*)[_SBAssistantController sharedInstance] dismissAssistant];
 	return nil;
 }
 
--(NSDictionary*)handleActivateAssistant:(NSString*)name userInfo:(NSDictionary*)userInfo
-{
+-(NSDictionary*)handleActivateAssistant:(NSString*)name userInfo:(NSDictionary*)userInfo {
     NSLog(@"AE: Activating the assistant");
     static Class _SBAssistantController = objc_getClass("SBAssistantController");
-    if ([_SBAssistantController preferenceEnabled] && [_SBAssistantController shouldEnterAssistant])
-    {
+    if ([_SBAssistantController preferenceEnabled] && [_SBAssistantController shouldEnterAssistant]) {
         [[UIApplication sharedApplication] activateAssistantWithOptions:nil withCompletion:nil];
     }
     
 	return nil;
 }
 
--(NSDictionary*)handleSay:(NSString*)name userInfo:(NSDictionary*)userInfo
-{
+-(NSDictionary*)handleSay:(NSString*)name userInfo:(NSDictionary*)userInfo {
     AESay([userInfo objectForKey:@"text"], [userInfo objectForKey:@"leng"]);
 	return nil;
 }
 
--(NSDictionary*)handleGotLocation:(NSString*)name userInfo:(NSDictionary*)userInfo
-{
+-(NSDictionary*)handleGotLocation:(NSString*)name userInfo:(NSDictionary*)userInfo {
     NSDictionary* resp = userInfo;
-    if ([[resp objectForKey:@"result"] boolValue])
-    {
+    if ([[resp objectForKey:@"result"] boolValue]) {
         NSDictionary* loc = [resp objectForKey:@"location"];
         unsigned long nowTimestamp = [[NSDate date] timeIntervalSince1970];
         
@@ -323,11 +285,11 @@ static bool HandleSpeech(NSString* refId, NSString* text, NSArray* tokens, NSSet
         locationData.horizontalAccuracy = [[loc objectForKey:@"horizontalAccuracy"] floatValue];
         locationData.age = nowTimestamp - locationData.timestamp;
     }
+	
 	return nil;
 }
 
--(NSDictionary*)handleSubmitQuery:(NSString*)name userInfo:(NSDictionary*)userInfo
-{
+- (NSDictionary*)handleSubmitQuery:(NSString*)name userInfo:(NSDictionary*)userInfo {
     static Class _SBAssistantController = objc_getClass("SBAssistantController");
     
     NSString* query = [userInfo objectForKey:@"query"];
@@ -360,48 +322,42 @@ static bool HandleSpeech(NSString* refId, NSString* text, NSArray* tokens, NSSet
 }
 
 //---------------
--(SOLocationData)getLocationData:(NSString*)refId  showReflection:(BOOL)show
-{
+- (SOLocationData)getLocationData:(NSString*)refId  showReflection:(BOOL)show {
     unsigned long nowTimestamp = [[NSDate date] timeIntervalSince1970];
     locationData.age = nowTimestamp - locationData.timestamp;
     
-    if (!locationData.valid || locationData.age>60)
-    {
+    if (!locationData.valid || locationData.age>60) {
         locationData.valid = false;
         
-        if (show)
-        {
+        if (show) {
             NSString* checkingText = @"Checking your location...";
             AESendToClient(SOCreateAceAddViewsUtteranceView(refId, checkingText, checkingText, @"Reflection", NO, NO));
         }
         
         IPCCall(@"me.k3a.AssistantExtensions.ad", @"GetLocation", nil);
     }
+    
     else
         NSLog(@"AE: getLocationData: Returning cached data %d seconds old", locationData.age);
     
     // wait a bit for the location
     int seconds = 0;
-    while (!locationData.valid && seconds++ < 10)
-    {
+    while (!locationData.valid && seconds++ < 10) {
         sleep(1);
     }
 
     return locationData;
 }
--(void)ignoreRestOfRequest:(NSString*)refId
-{
+
+- (void)ignoreRestOfRequest:(NSString*)refId {
     if (refId) [s_handled_refs addObject:refId];
 }
 
-
-- (NSDictionary *)handleGetExtensions:(NSString *)name withUserInfo:(NSDictionary *)userInfo 
-{
+- (NSDictionary *)handleGetExtensions:(NSString *)name withUserInfo:(NSDictionary *)userInfo  {
 	NSMutableArray *ret = [NSMutableArray array];
 	
 	NSArray *allExtensions = [AEExtension allExtensions];
-	for (AEExtension* ext in allExtensions) 
-    {
+	for (AEExtension* ext in allExtensions) {
 		BOOL hp = [ext hasPreferenceBundle];
 		
 		NSMutableDictionary *info = [[NSMutableDictionary alloc] init];
@@ -423,13 +379,7 @@ static bool HandleSpeech(NSString* refId, NSString* text, NSArray* tokens, NSSet
 	return [NSDictionary dictionaryWithObject:ret forKey:@"Extensions"];
 }
 
-static void ReloadPrefs(CFNotificationCenterRef center, void *observer, CFStringRef name, const void *object, CFDictionaryRef userInfo)
-{
-    [[AESpringBoardMsgCenter sharedInstance] reloadPrefs];
-}
-
--(void)reloadPrefs
-{
+- (void)reloadPrefs {
     [prefs release];
     prefs = [[NSMutableDictionary alloc] initWithContentsOfFile:@"/var/mobile/Library/Preferences/me.k3a.AssistantExtensions.plist"];
     if (!prefs)
@@ -438,14 +388,13 @@ static void ReloadPrefs(CFNotificationCenterRef center, void *observer, CFString
         NSLog(@"AE: Prefs loaded");
 }
 
--(id)prefForKey:(NSString *)name
-{
+-(id)prefForKey:(NSString *)name {
     return [prefs objectForKey:name];
 }
 
 - (id)init {
 	if ((self = [super init])) {
-        NSLog(@"************* AssistantExtensions SpringBoard MsgCenter Startup *************");
+        NSLog(@"[AssistantExtensions] Initializing SpringBoard message center.");
         
         s_inst = self;
         
@@ -453,11 +402,7 @@ static void ReloadPrefs(CFNotificationCenterRef center, void *observer, CFString
         s_handled_refs = [[NSMutableSet alloc] init];
         locationData.valid = false;
         
-        // init commands
-        //InitSystemCmds();
-        //InitSBHooks();
         [AEExtension initExtensions];
-        
         
         // init center
 		center = [[CPDistributedMessagingCenter centerNamed:@"me.k3a.AssistantExtensions"] retain];
@@ -473,9 +418,8 @@ static void ReloadPrefs(CFNotificationCenterRef center, void *observer, CFString
         [center registerForMessageName:@"AllExtensions" target:self selector:@selector(handleGetExtensions:withUserInfo:)];
         
         // prefs notification observer
-        CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), self, ReloadPrefs, CFSTR("me.k3a.AssistantExtensions/reloadPrefs"), NULL, CFNotificationSuspensionBehaviorCoalesce);
-        
         [self reloadPrefs];
+        CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), self, ReloadPrefs, CFSTR("me.k3a.AssistantExtensions/reloadPrefs"), NULL, CFNotificationSuspensionBehaviorCoalesce);
 	}
     
 	return self;
@@ -490,5 +434,4 @@ static void ReloadPrefs(CFNotificationCenterRef center, void *observer, CFString
 	[center release];
 	[super dealloc];
 }
-
 @end

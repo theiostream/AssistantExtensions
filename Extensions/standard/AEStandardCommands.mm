@@ -234,9 +234,7 @@ static BOOL AEPreviewTweet(NSString* tweetText)
 }
 
 -(BOOL)handleSayMatch:(id<AEPatternMatch>)match context:(id<SEContext>)ctx {
-    
-    [ctx sendAddViewsUtteranceView:[match namedElement:@"what"]];
-    [ctx sendRequestCompleted];
+    //ahjiascud
     return YES;
 }
 
@@ -290,9 +288,9 @@ static BOOL AEPreviewTweet(NSString* tweetText)
 
 - (BOOL)handleWouldGetterMatch:(id<AEPatternMatch>)match context:(id<SEContext>)ctx {
 	srand(time(NULL));
-	int r = rand() % 2;
-	NSString *s = r>0 ? [_system localizedString:@"Yes, most certainly."] : [_system localizedString:@"No, that's disturbing."];
+	int r = rand() % 51;
 	
+	NSString *s = r<25 ? [_system localizedString:@"Yes, most certainly."] : [_system localizedString:@"No, that's disturbing."];
 	[ctx sendAddViewsUtteranceView:s];
 	
 	[ctx sendRequestCompleted];

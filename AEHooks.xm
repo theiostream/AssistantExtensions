@@ -192,7 +192,7 @@ id AECreateAceObjectFromDictionary(NSDictionary *dict);
     NSDictionary* resp = IPCCallResponse(@"me.k3a.AssistantExtensions", @"Server2Client", [NSDictionary dictionaryWithObject:dict forKey:@"object"]);
     NSDictionary* respObj = [resp objectForKey:@"object"];
     
-    if (respObj) %orig(AECreateAceObjectFromDictionary(respObj));
+    if (respObj) SessionSend(0, respObj);
 }
 
 - (void)sendCommand:(id)cmd {
@@ -202,7 +202,7 @@ id AECreateAceObjectFromDictionary(NSDictionary *dict);
     NSDictionary* resp = IPCCallResponse(@"me.k3a.AssistantExtensions", @"Client2Server", [NSDictionary dictionaryWithObject:dict forKey:@"object"]);
     NSDictionary* respObj = [resp objectForKey:@"object"];
     
-    if (respObj) %orig(AECreateAceObjectFromDictionary(respObj));
+    if (respObj) SessionSend(1, respObj);
 }
 %end
 %end
@@ -226,17 +226,18 @@ id AECreateAceObjectFromDictionary(NSDictionary *dict) {
 }
 
 BOOL SessionSend(int type, NSDictionary *dict) {
-	if (!s_lastSession) return NO;
-	if (!dict)			return NO;
+	if (!s_lastSession) { NSLog(@"######### HALT! SESSION IS NIL!"); return NO; }
+	if (!dict)			{ NSLog(@"######### HALT! DICT IS NIL!"); return NO; }
     
     id obj = AECreateAceObjectFromDictionary(dict);
-    if (!obj) return NO;
+    if (!obj) { NSLog(@"######### HALT! OBJ IS NIL!"); return NO; }
     
     if (type == 0)
     	_logos_orig$ADHooks$ADSession$_handleAceObject$(s_lastSession, @selector(_handleAceObject:), obj);
     else if (type == 1)
     	_logos_orig$ADHooks$ADSession$sendCommand$(s_lastSession, @selector(sendCommand:), obj);
     
+    //NSLog(@"RETURNING LE YES K?");
     return YES;
 }
 

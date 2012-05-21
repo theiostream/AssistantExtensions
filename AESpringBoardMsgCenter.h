@@ -24,6 +24,5 @@
 -(void)reloadPrefs;
 -(id)prefForKey:(NSString*)name;
 @end
-static AESpringBoardMsgCenter* s_inst = nil;
 
 void SBCenterAssistantDismissed();

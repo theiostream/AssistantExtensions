@@ -14,7 +14,12 @@ AssistantExtensions_LDFLAGS += -lpcre
 AssistantExtensions_FRAMEWORKS = Foundation UIKit CoreFoundation Accounts Twitter CoreLocation
 AssistantExtensions_PRIVATE_FRAMEWORKS = AppSupport GraphicsServices AssistantUI SAObjects VoiceServices BulletinBoard
 
+TOOL_NAME = AETool
+AETool_FILES = AETool.m
+AETool_PRIVATE_FRAMEWORKS = AppSupport
+
 include $(THEOS_MAKE_PATH)/tweak.mk
+include $(THEOS_MAKE_PATH)/tool.mk
 include $(THEOS_MAKE_PATH)/aggregate.mk
 
 after-stage::

@@ -18,12 +18,10 @@ NSString* RandomUUID() {
     return (NSString *)CFUUIDCreateString(NULL, u);
 }
 
-void IPCCall(NSString* center, NSString* message, NSDictionary* object)
-{
+void IPCCall(NSString* center, NSString* message, NSDictionary* object) {
     [[CPDistributedMessagingCenter centerNamed:center] sendMessageName:message userInfo:object];
 }
 
-NSDictionary* IPCCallResponse(NSString* center, NSString* message, NSDictionary* object)
-{
+NSDictionary* IPCCallResponse(NSString* center, NSString* message, NSDictionary* object) {
     return [[CPDistributedMessagingCenter centerNamed:center] sendMessageAndReceiveReplyName:message userInfo:object];
 }

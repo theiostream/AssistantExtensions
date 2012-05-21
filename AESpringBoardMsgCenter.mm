@@ -48,6 +48,7 @@ static bool HandleSpeech(NSString* refId, NSString* text, NSArray* tokens, NSSet
     return HandleSpeechExtensions(refId, text, tokens, tokenset);
 }
 
+static AESpringBoardMsgCenter* s_inst = nil;
 @implementation AESpringBoardMsgCenter
 + (AESpringBoardMsgCenter*)sharedInstance {
     return s_inst;

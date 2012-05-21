@@ -11,8 +11,8 @@ AssistantExtensions_CFLAGS += -Iinclude
 AssistantExtensions_LDFLAGS  = -multiply_defined suppress -Llib -Fframeworks
 AssistantExtensions_LDFLAGS += -fobjc-exceptions -fobjc-call-cxx-cdtors
 AssistantExtensions_LDFLAGS += -lpcre
-AssistantExtensions_FRAMEWORKS = Foundation UIKit CoreFoundation Accounts Twitter CoreLocation
-AssistantExtensions_PRIVATE_FRAMEWORKS = AppSupport GraphicsServices AssistantUI SAObjects VoiceServices BulletinBoard
+AssistantExtensions_FRAMEWORKS = UIKit CoreLocation
+AssistantExtensions_PRIVATE_FRAMEWORKS = AppSupport VoiceServices AssistantUI SAObjects
 
 TOOL_NAME = AETool
 AETool_FILES = AETool.m

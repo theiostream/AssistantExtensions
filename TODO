@@ -5,5 +5,7 @@ Ugh, a lot.
 4. no SiriObjects.h at each directory.
 5. Fix templates for #4
 6. install extensions individually.
+7. fix bug with sending messages through siri (it sends, but assistantd gets to eternal lag for some reason)
+8. someday place AEX into a separate submodule so it can accept (a lot of) improvements
 
 Please add requests at http://ae.k3a.me/forum

@@ -79,15 +79,7 @@ static BOOL AEPreviewTweet(NSString* tweetText)
     
     TWTweetComposeViewController* twitter = [[TWTweetComposeViewController alloc] init];
     [twitter setInitialText:tweetText];
-    twitter.completionHandler = ^(TWTweetComposeViewControllerResult res) 
-    {
-        if(res == TWTweetComposeViewControllerResultDone)
-        {
-        }
-        else if(res == TWTweetComposeViewControllerResultCancelled)
-        {
-        }
-        
+    twitter.completionHandler = ^(TWTweetComposeViewControllerResult res){
         NSLog(@"AE Standard: Tweet composer done.");
         static Class _SBUIController = objc_getClass("SBUIController");
         [(SBUIController*)[_SBUIController sharedInstance] _hideKeyboard];
@@ -254,9 +246,19 @@ static BOOL AEPreviewTweet(NSString* tweetText)
 	if (len > 0 && ps[len-1] == '%') ps[len-1] = 0;
 	
 	float val = atof(ps)/100.0f;
+	NSLog(@"lol yay char %c", ps);
+   
+   	if (val == 0.0f && ps != '0') {
+   		[ctx sendAddViewsUtteranceView:[_system localizedString:@"Please give me a valid number to change brightness."]];
+   		[ctx sendRequestCompleted];
+   		
+   		return YES;
+   	}
     
-	static Class _SBBrightnessController = objc_getClass("SBBrightnessController");
-    [[_SBBrightnessController sharedBrightnessController] setBrightnessLevel:val];
+	if (val <= 0.0f) val = 0.01f;
+	else if (val > 1.0f) val = 1.0f;
+    
+    [[UIApplication sharedApplication] setBacklightLevel:val permanently:YES]; 
 
 	[ctx sendAddViewsUtteranceView:[_system localizedString:@"As you wish."]];
 	[ctx sendRequestCompleted];

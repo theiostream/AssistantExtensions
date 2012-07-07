@@ -236,8 +236,7 @@ static AESpringBoardMsgCenter* s_inst = nil;
         NSLog(@"AE: Trying to handle user-corrected request '%@'", utterance);
         
         // try to handle user-corrected speech request
-        if (HandleSpeech(refId, utterance, tokens, tokenset))
-        {
+        if (HandleSpeech(refId, utterance, tokens, tokenset)) {
             // handled
             NSLog(@"[AE] Client->server returning nil (theiostream)");
             return [NSDictionary dictionaryWithObjectsAndKeys:nil,@"object", nil];

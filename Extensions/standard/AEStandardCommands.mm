@@ -6,6 +6,10 @@
 #import <Twitter/Twitter.h>
 #import <Accounts/Accounts.h>
 
+@interface UIApplication (SpringBoard_AEStandard)
+- (void)setBacklightLevel:(float)lvl permanently:(BOOL)perm;
+@end
+
 static id AEApplicationForDisplayName(NSString *displayName) {
 	NSArray *apps = [[objc_getClass("SBApplicationController") sharedInstance] allApplications];
 
@@ -246,9 +250,8 @@ static BOOL AEPreviewTweet(NSString* tweetText)
 	if (len > 0 && ps[len-1] == '%') ps[len-1] = 0;
 	
 	float val = atof(ps)/100.0f;
-	NSLog(@"lol yay char %c", ps);
    
-   	if (val == 0.0f && ps != '0') {
+   	if (val == 0.0f && *ps != '0') {
    		[ctx sendAddViewsUtteranceView:[_system localizedString:@"Please give me a valid number to change brightness."]];
    		[ctx sendRequestCompleted];
    		

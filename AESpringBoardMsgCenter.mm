@@ -95,7 +95,7 @@ static AESpringBoardMsgCenter* s_inst = nil;
     
     // we will intercept SpeechRecognized only
     if ([pClass isEqualToString:@"SpeechRecognized"]) {
-        IPCCall(@"me.k3a.AssistantExtensions.ad", @"Send2Client", [NSDictionary dictionaryWithObjectsAndKeys:object,@"object", nil]);
+        IPCCallResponse(@"me.k3a.AssistantExtensions.ad", @"Send2Client", [NSDictionary dictionaryWithObjectsAndKeys:object,@"object", nil]);
         if (buildMessageLock)
    			return [NSDictionary dictionaryWithObjectsAndKeys:nil,@"object", nil];
         

@@ -185,6 +185,8 @@ id AECreateAceObjectFromDictionary(NSDictionary *dict);
 %group ADHooks
 %hook ADSession
 - (void)_handleAceObject:(id)aceObj {
+    NSLog(@"(theiostream) _handleAceObject:");
+    %log;
     s_lastSession = self;
     
     NSDictionary* dict = [aceObj dictionary];
@@ -195,7 +197,7 @@ id AECreateAceObjectFromDictionary(NSDictionary *dict);
 }
 
 - (void)sendCommand:(id)cmd {
-    %log;
+    //%log;
     s_lastSession = self;
     
     NSDictionary* dict = [cmd dictionary];

@@ -10,13 +10,13 @@ TODO soon to be released.
 
 COMPILING
 -------------------------------
-1. Get and place AssistantUI.framework and SAObjects.framework inside frameworks/ directory
-2. Place libaiml.dylib, libdisplaystack.dylib and libpcre.dylib on lib/ directory or at LIBPATH (/usr/lib, $THEOS/lib, et al.)
-3. make
+1. Place libaiml.dylib, libdisplaystack.dylib and libpcre.dylib on lib/ directory or at LIBPATH (/usr/lib, $THEOS/lib, et al.)
+2. make
 
 MORE
 -------------------------------
 libaiml can be found at http://github.com/theiostream/libaiml
+libdisplaystack can be found at http://github.com/Zimm/libdisplaystack (<- WARNING! DS IS *BROKEN* ON iOS 6!)
 
 Website: http://ae.k3a.me/
 Twitter: @kexik

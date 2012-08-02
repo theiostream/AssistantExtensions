@@ -110,23 +110,3 @@ BOOL HandleSpeechExtensions(NSString* refId, NSString* text, NSArray* tokens, NS
 void AEExtensionBeginExclusive(NSObject<SECommand>* ex);
 void AEExtensionEndExclusive();
 void RequestCompleted();
-
-#pragma mark - UNIVERSAL SIRI SNIPPET ---------------------------------------------------------------------------------
-// Used as a proxy between user-supplied snippet from an extension and Assistant implementation
-
-@interface SAK3AExtensionSnippet : SAUISnippet {
-@private
-}
-- (id)encodedClassName;
-- (id)groupIdentifier;
-@end
-
-@interface K3AExtensionSnippetController : AFUISnippetController {
-    UIView* _view;
-    NSObject<SESnippet>* _snip;
-}
-
-- (id)view;
-- (void)dealloc;
-- (id)initWithAceObject:(id)ace delegate:(id)dlg;
-@end

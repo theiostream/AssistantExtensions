@@ -22,9 +22,12 @@ include $(THEOS_MAKE_PATH)/tweak.mk
 include $(THEOS_MAKE_PATH)/tool.mk
 include $(THEOS_MAKE_PATH)/aggregate.mk
 
-after-stage::
+internal-stage::
 	$(ECHO_NOTHING)mkdir -p "$(THEOS_STAGING_DIR)/usr/include"$(ECHO_END)
 	$(ECHO_NOTHING)cp SiriObjects.h "$(THEOS_STAGING_DIR)/usr/include/"$(ECHO_END)
+	
+	$(ECHO_NOTHING)mkdir -p $(THEOS_STAGING_DIR)/System/Library/Assistant/UIPlugins/K3AExtension.assistantUIBundle$(ECHO_END)
+	$(ECHO_NOTHING)cp UIPlugin.plist $(THEOS_STAGING_DIR)/System/Library/Assistant/UIPlugins/K3AExtension.assistantUIBundle/Info.plist$(ECHO_END)
 
 debclean:
-	rm -rf *.deb
+	rm -f *.deb

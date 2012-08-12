@@ -23,6 +23,9 @@ include $(THEOS_MAKE_PATH)/tool.mk
 include $(THEOS_MAKE_PATH)/aggregate.mk
 
 internal-stage::
+	$(ECHO_NOTHING)mkdir -p $(THEOS_STAGING_DIR)/DEBIAN$(ECHO_END)
+	$(ECHO_NOTHING)cp postinst.sh $(THEOS_STAGING_DIR)/DEBIAN/postinst$(ECHO_END)
+	
 	$(ECHO_NOTHING)mkdir -p "$(THEOS_STAGING_DIR)/usr/include"$(ECHO_END)
 	$(ECHO_NOTHING)cp SiriObjects.h "$(THEOS_STAGING_DIR)/usr/include/"$(ECHO_END)
 	

@@ -1,8 +1,7 @@
 #import "AEChatBotCommands.h"
-
 #include <aiml/aiml.h>
 
-#define EXTENSIONS_PATH "/Library/AssistantExtensions/"
+#define EXTENSIONS_PATH [[NSBundle mainBundle] bundlePath]
 
 using namespace std;
 using namespace aiml;

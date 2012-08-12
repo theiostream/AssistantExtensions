@@ -9,6 +9,3 @@ ChatBot_CFLAGS = -I../../include/
 ChatBot_LDFLAGS = -L../lib/ -laiml
 
 include $(THEOS_MAKE_PATH)/bundle.mk
-
-after-install::
-	install.exec "killall -9 SpringBoard"

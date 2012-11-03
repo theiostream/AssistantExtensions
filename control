@@ -1,0 +1,7 @@
+Package: me.k3a.ae
+Name: AssistantExtensions
+Version: 2.0b
+Author: K3A 
+Section: Tweaks
+Depends: firmware (>= 5.0), mobilesubstrate, preferenceloader, pcre, gsc.assistant, com.zimm.libdisplaystack, me.k3a.libaiml
+Architecture: iphoneos-arm

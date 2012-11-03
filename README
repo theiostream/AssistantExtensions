@@ -17,7 +17,9 @@ MORE
 -------------------------------
 libaiml can be found at http://github.com/theiostream/libaiml
 libdisplaystack can be found at http://github.com/Zimm/libdisplaystack (<- WARNING! DS IS *BROKEN* ON iOS 6!)
-libpcre was extracted from the package in question on Cydia.
+libpcre can be found at http://svn.telesphoreo.org/trunk/data/pcre/pcre-8.30.tar.bz2
 
+INFO
+-------------------------------
 Website: http://ae.k3a.me/
 Twitter: @kexik

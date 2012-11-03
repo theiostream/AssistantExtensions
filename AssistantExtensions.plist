@@ -1,5 +1,7 @@
 Filter = {
-  Bundles = ("com.apple.springboard");
-  Executables = ("assistantd");
-  Mode = "Any";
+	CoreFoundationVersion = ( 675.00 );
+	
+	Bundles = ("com.apple.springboard");
+	Executables = ("assistantd");
+	Mode = "Any";
 };

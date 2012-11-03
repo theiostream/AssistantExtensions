@@ -1,1 +1,6 @@
-{ Filter = { Bundles = ( "com.apple.Preferences", "com.apple.springboard" ); }; }
+{
+	Filter = {
+		Bundles = ( "com.apple.AssistantServices" );
+		CoreFoundationVersion = ( 675.00, 690.10 );
+	};
+}
